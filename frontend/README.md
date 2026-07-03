@@ -14,7 +14,7 @@ npm install
 npm install react-router-dom socket.io-client
 ```
 
-`.env`に`VITE_API_BASE_URL`（バックエンドのURL。Renderが発行するURル、`https://xxxx.onrender.com`の形）を設定する。バックエンドはRenderの無料枠でスリープすることがあるので、繋がらないときは一度直接アクセスして起こしてから再試行する。
+`.env`に`VITE_API_BASE_URL`（バックエンドのURL。Renderが発行するURL、`https://xxxx.onrender.com`の形）を設定する。バックエンドはRenderの無料枠でスリープすることがあるので、繋がらないときは一度直接アクセスして起こしてから再試行する。
 
 ## ディレクトリ構成（設計済み。詳細は docs/class_design.md 参照）
 
