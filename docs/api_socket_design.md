@@ -1,6 +1,6 @@
 # API / Socket.IO イベント設計
 
-DOT STICKER CHAT / 稲村森田チーム
+DOT STICKER CHAT
 確定スコープ準拠：交換機能・グループチャット・1対1個別部屋は無し（オープンチャット1本）
 
 ---
