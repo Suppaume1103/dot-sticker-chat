@@ -4,6 +4,10 @@ Node.js + TypeScript + Express + Socket.IO + PostgreSQL
 
 セットアップは `README.md` を参照。
 
+## 実装の進め方
+
+`src/` はまだ空（ディレクトリのみ）。一気に全クラスを実装させず、`index.ts`＋`/api/health`が起動する最小構成 → `auth` → `prompts` → 他のAPI、の順に小さく進める。1回の指示で1〜2クラスを目安にする。
+
 ## 依存の向き（絶対に守る）
 
 ```

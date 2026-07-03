@@ -28,7 +28,7 @@
 5. 作業終了時、今日できたこと・明日やることを相手に一言送る
 ```
 
-3番の「動いたらpush」が特に大事だ。1日の終わりにまとめてpushじゃなく、**何か1つ動いたらその都度push**する。pushすればRailwayが自動で再デプロイするので、相手もそのタイミングで動作確認できる。通信が止まったまま丸一日が過ぎると気づいたときに大きな手戻りになる。
+3番の「動いたらpush」が特に大事だ。1日の終わりにまとめてpushじゃなく、**何か1つ動いたらその都度push**する。pushすればRenderが自動で再デプロイするので、相手もそのタイミングで動作確認できる。通信が止まったまま丸一日が過ぎると気づいたときに大きな手戻りになる。
 
 ---
 
@@ -76,42 +76,64 @@ VSCodeの左側にあるSource Control（ソース管理）パネルも、backen
 
 ---
 
-## DBの扱い方（ローカル / Railway）
+## DBの扱い方（ローカル / Render）
 
-別々のパソコンで作業する以上、バック担当のパソコンが常に起動してるとは限らない。なので本番相当のDB・APIサーバーはRailway（クラウド）に置き、ローカルは開発中の作業台として使い分ける。
+別々のパソコンで作業する以上、バック担当のパソコンが常に起動してるとは限らない。なので本番相当のDB・APIサーバーはRender（クラウド）に置き、ローカルは開発中の作業台として使い分ける。Renderを選んだのは、Railwayと違って**クレジットカード登録が不要**だから（その代わりAPIサーバーは15分アクセスが無いとスリープする。デモ直前は一度アクセスして起こしておく）。
 
 ### 役割分担
 
 ```
-ローカルのPostgreSQL   → バック担当だけが使う。新機能を試すときの作業台
-Railway上のPostgreSQL  → 実際にフロントと繋いで動作確認する場所（常時起動）
+ローカルのPostgreSQL  → バック担当だけが使う。新機能を試すときの作業台
+Render上のPostgreSQL  → 実際にフロントと繋いで動作確認する場所（常時起動、ただしAPIサーバーはスリープあり）
 ```
 
-フロント担当はローカルDBを直接触ることはない。フロントが繋ぐのは常にAPIサーバーのURLで、`.env`の`VITE_API_BASE_URL`をRailwayが発行するURLに向けておけばいい。
+フロント担当はローカルDBを直接触ることはない。フロントが繋ぐのは常にAPIサーバーのURLで、`.env`の`VITE_API_BASE_URL`をRenderが発行するURLに向けておけばいい。
 
-### Railwayのセットアップ手順
+### Renderのセットアップ手順
 
-1. https://railway.app でGitHubアカウントを使って登録する
-2. 「New Project」→「Provision PostgreSQL」でDBサービスを立てる。作成されたサービスの「Variables」タブに`DATABASE_URL`が自動生成されるので控えておく
-3. `db/schema.sql`を流す。Railwayダッシュボードの「Query」タブに貼り付けて実行するか、ローカルから `psql "<RailwayのDATABASE_URL>" -f db/schema.sql`
-4. 同じプロジェクトで「New」→「GitHub Repo」を選び、`dot-sticker-chat`リポジトリを連携する。**Root Directoryを`backend`に指定する**（モノレポなのでここを間違えるとビルドが通らない）
-5. デプロイしたサービスの「Variables」に環境変数を設定する
-   - `DATABASE_URL` → 手順2のRailway PostgreSQL接続文字列（サービス間参照 `${{Postgres.DATABASE_URL}}` で自動連携できることが多い）
+1. https://render.com でGitHubアカウントを使って登録する（カード登録不要）
+2. 「New +」→「PostgreSQL」でDBサービスを立てる
+3. **Internal Database URL と External Database URL の2つが発行される。用途を間違えない。**
+   - ローカルの`psql`から直接繋ぐとき（`schema.sql`を流す、テーブル確認する等）→ **External**
+   - Render上にデプロイしたAPIサーバーの環境変数 → **Internal**（同じRenderネットワーク内なので速く、これで統一する）
+4. `db/schema.sql`を流す（ローカルから）
+   ```
+   psql "<RenderのExternal Database URL>" -f db/schema.sql
+   ```
+5. 「New +」→「Web Service」で`dot-sticker-chat`リポジトリを連携する
+   - **Root Directoryを`backend`に指定する**（モノレポなのでここを間違えるとビルドが通らない。`npm error enoent ... package.json`のようなエラーが出たら大抵ここ）
+   - Build Command: `npm install && npm run build`
+   - Start Command: `npm run start`
+6. 環境変数を設定する（Web Serviceの「Environment」タブ、または使い回すなら「Environment Group」を作って紐付ける）
+   - `DATABASE_URL` → 手順3のInternal Database URL
    - `JWT_SECRET` → 適当な文字列
    - `CLIENT_ORIGIN` → フロントの本番URL
-   - `PORT` → Railwayが自動割り当てするので基本触らなくていい
-6. デプロイが成功すると `https://xxxx.up.railway.app` のようなURLが発行される。これがAPIの本番URL
-7. `frontend/.env` の `VITE_API_BASE_URL` をこのURLに書き換える
+   - `PORT` → Renderが自動割り当てするので基本触らなくていい
+7. デプロイが成功すると `https://xxxx.onrender.com` のようなURLが発行される。これがAPIの本番URL。`https://xxxx.onrender.com/api/health` にアクセスして `{"ok":true}` が返れば成功
+8. `frontend/.env` の `VITE_API_BASE_URL` をこのURLに書き換える
+
+### デプロイ前に確認すること（今回つまずいた点）
+
+Renderは`backend/package.json`を見つけてビルドしようとする。だから**`backend/`に`package.json`が存在していないとビルドが失敗する**。ディレクトリ構成（`.gitkeep`だけの空フォルダ）を作っただけでは`npm install`が通らないので、実際に
+
+```
+cd backend
+npm init -y
+npm install express cors dotenv jsonwebtoken node-cron pg socket.io
+npm install -D typescript tsx @types/node @types/express @types/cors @types/jsonwebtoken @types/node-cron @types/pg
+```
+
+を実行して`package.json`を作ってから、Renderのデプロイを試す。`npm init -y`直後の`package.json`は`scripts`欄が空（`test`しか無い）なので、`dev`/`build`/`start`を手動かClaude Codeで追記する必要がある。
 
 ### git pushで自動的に再デプロイされる
 
-Railwayをリポジトリと連携しておけば、`main`にpushするたびに自動で再デプロイされる。今までの「pushしたらお互い動作確認する」という進め方とそのまま噛み合う。
+Renderをリポジトリと連携しておけば、`main`にpushするたびに自動で再デプロイされる。今までの「pushしたらお互い動作確認する」という進め方とそのまま噛み合う。
 
 ### バック担当が普段の開発で気をつけること
 
-- 新しいAPIを実装している最中は、まずローカルDBで動作確認する。いきなりRailway（本番相当）で試すと、壊れたときにフロント担当の作業も止まってしまう
-- ローカルで動いたら`git push`する。Railwayが自動で拾って再デプロイする
-- `db/schema.sql`を変更したときは、ローカルとRailwayの両方に同じ変更を反映する（片方だけ更新すると食い違いが起きる）
+- 新しいAPIを実装している最中は、まずローカルDBで動作確認する。いきなりRender（本番相当）で試すと、壊れたときにフロント担当の作業も止まってしまう
+- ローカルで動いたら`git push`する。Renderが自動で拾って再デプロイする
+- `db/schema.sql`を変更したときは、ローカルとRenderの両方に同じ変更を反映する（片方だけ更新すると食い違いが起きる）
 
 ---
 
@@ -166,6 +188,27 @@ TypeScriptの型エラーは長くて怖く見えるが、大体は「渡した�
 
 ### PostgreSQLに繋がらない
 `DATABASE_URL`のユーザー名・パスワード・ポート番号のどれかが間違っていることが多い。前に`netprofinal`ユーザーで文字コードのトラブルがあったように、環境ごとのクセが出やすい箇所。エラーメッセージに`password`や`encoding`が出ていれば、その単語で何が起きてるか見当がつく。
+
+### `\dt`やデータの日本語が文字化けする
+DBやファイル側の問題ではなく、大抵は**PowerShell側の表示エンコーディングがShift-JISのまま**なのが原因。原因の切り分け方は「見出し（テーブル一覧、名前など）だけ化けているか」「データの中身（保存した日本語）まで化けているか」で分かる。前者はほぼ確実に表示だけの問題で、DBの中身は無事。
+
+その場のセッションだけ直すなら接続前に一度だけ実行する。
+```powershell
+$env:PGCLIENTENCODING="UTF8"
+```
+
+恒久的に直したいなら、`$PROFILE`に以下を追記して保存し、PowerShellを開き直す。
+```powershell
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+```
+
+ただし他の授業でShift-JIS前提の環境を使っている場合は、恒久設定にはせずセッションごとの一時設定（`$env:`の方）で使い分けるのが安全。
+
+### RenderのInternal/External URLを間違える
+ローカルの`psql`から直接繋ぐときは**External**、Render上のAPIサーバーの環境変数には**Internal**を使う。取り違えると接続できない。詳しくは「DBの扱い方」セクション参照。
+
+### `backend/`にpackage.jsonが無くてRenderのビルドが失敗する
+`npm error enoent ... package.json`が出たら、単純に`npm init`をまだ実行していない可能性が高い。ディレクトリ構成（フォルダと`.gitkeep`）だけでは`npm install`は動かない。「DBの扱い方」セクションの「デプロイ前に確認すること」を参照。
 
 ---
 
