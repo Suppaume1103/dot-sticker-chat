@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOT STICKER CHAT — ワイヤーフレーム</title>
+<style>
+  :root{
+    --ink:#1a1a1a;        /* 線・文字 */
+    --sub:#6b6b6b;        /* 補助文字 */
+    --line:#cfcfcf;       /* 罫線 */
+    --fill:#e9e9e9;       /* プレースホルダ塗り */
+    --fill2:#f4f4f4;      /* 薄い塗り */
+    --paper:#f7f6f3;      /* 紙 */
+    --screen:#ffffff;     /* 画面内 */
+    --accent:#e0483d;     /* CTA/お題（アクセント1色） */
+    --accent2:#2f6b4f;     /* 強調用サブアクセント（旧キラ枠から流用） */
+    --good:#2f9e5e;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    --jp:"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--jp);line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  header.top{
+    padding:28px 28px 20px;border-bottom:2px solid var(--ink);
+    background:var(--screen);
+  }
+  header.top h1{
+    margin:0;font-family:var(--mono);font-size:20px;letter-spacing:.06em;
+    display:flex;align-items:center;gap:10px;
+  }
+  header.top h1 .dot{
+    width:14px;height:14px;background:var(--accent);
+    box-shadow:14px 0 0 var(--ink), 0 14px 0 var(--accent2);
+    margin-right:14px;margin-bottom:14px;display:inline-block;
+  }
+  header.top .meta{
+    font-family:var(--mono);font-size:11px;color:var(--sub);
+    margin-top:14px;letter-spacing:.04em;
+  }
+  header.top .legend{
+    margin-top:14px;display:flex;gap:16px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:11px;color:var(--sub);
+  }
+  header.top .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:12px;height:12px;display:inline-block;border:1px solid var(--line)}
+
+  .grid{
+    display:flex;flex-wrap:wrap;gap:32px 28px;
+    padding:32px;align-items:flex-start;
+  }
+
+  /* ---- スマホ枠 ---- */
+  .phone{width:300px}
+  .phone .cap{
+    font-family:var(--mono);font-size:12px;letter-spacing:.04em;
+    margin-bottom:8px;display:flex;align-items:baseline;gap:8px;
+  }
+  .phone .cap b{font-size:13px}
+  .phone .cap .num{
+    background:var(--ink);color:#fff;font-size:11px;
+    width:20px;height:20px;display:inline-flex;align-items:center;
+    justify-content:center;flex:none;
+  }
+  .frame{
+    border:2px solid var(--ink);border-radius:22px;background:var(--screen);
+    overflow:hidden;height:600px;display:flex;flex-direction:column;
+    position:relative;
+  }
+  .statusbar{
+    height:24px;flex:none;display:flex;align-items:center;justify-content:space-between;
+    padding:0 14px;font-family:var(--mono);font-size:10px;color:var(--sub);
+    border-bottom:1px solid var(--line);
+  }
+  .scr{flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column}
+
+  /* 共通パーツ */
+  .appbar{
+    flex:none;padding:10px 12px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    font-size:13px;font-weight:700;
+  }
+  .appbar .sub{font-weight:400;font-size:11px;color:var(--sub)}
+  .body{flex:1;overflow:hidden;position:relative;padding:12px}
+  .tabbar{
+    flex:none;height:52px;border-top:1px solid var(--line);
+    display:flex;
+  }
+  .tabbar div{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:10px;color:var(--sub);gap:3px;
+  }
+  .tabbar div.on{color:var(--ink);font-weight:700}
+  .tabbar .ic{width:18px;height:18px;border:1.5px solid currentColor}
+  .tabbar div.on .ic{background:var(--ink)}
+
+  .ph{background:var(--fill);border:1px dashed var(--line)}
+  .ph2{background:var(--fill2);border:1px dashed var(--line)}
+  .lbl{font-family:var(--mono);font-size:10px;color:var(--sub)}
+  .pill{
+    display:inline-block;font-family:var(--mono);font-size:9px;
+    padding:2px 6px;border:1px solid var(--line);border-radius:10px;color:var(--sub);
+  }
+  .btn{
+    border:1.5px solid var(--ink);border-radius:8px;padding:8px;text-align:center;
+    font-size:12px;font-weight:700;
+  }
+  .btn.cta{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn.sm{padding:5px 8px;font-size:11px}
+  .fab{
+    position:absolute;right:12px;bottom:12px;width:52px;height:52px;border-radius:50%;
+    background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-family:var(--mono);font-weight:700;border:2px solid var(--ink);
+    text-align:center;line-height:1.1;
+  }
+
+  /* 注釈 */
+  .note{
+    margin-top:10px;border-left:3px solid var(--ink);padding:8px 10px;background:var(--screen);
+    font-size:11px;color:#333;
+  }
+  .note .t{font-family:var(--mono);font-size:10px;color:var(--sub);letter-spacing:.04em;margin-bottom:4px}
+  .inv{
+    font-family:var(--mono);font-size:9px;color:#fff;background:var(--ink);
+    padding:1px 5px;border-radius:3px;margin-right:3px;display:inline-block;margin-top:3px;
+  }
+  .inv.a2{background:var(--accent2)}
+  .inv.a{background:var(--accent)}
+
+  /* ===== 広場（空間型）===== */
+  .field{position:absolute;inset:0;background:
+    repeating-linear-gradient(0deg,transparent 0 23px,var(--line) 23px 24px),
+    repeating-linear-gradient(90deg,transparent 0 23px,var(--line) 23px 24px);
+    background-color:#fbfbfa;}
+  .field .center{
+    position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
+    background:var(--accent);color:#fff;padding:8px 12px;text-align:center;
+    border:2px solid var(--ink);min-width:120px;
+  }
+  .field .center .o{font-size:9px;font-family:var(--mono);opacity:.85}
+  .field .center .th{font-size:13px;font-weight:700;margin-top:2px}
+  /* 保存数ティア：1×1 / 2×2 / 4×4 / 10×10（ワイヤーは比率を圧縮表示） */
+  .art{position:absolute;border:1px solid var(--ink);background:var(--fill);
+    image-rendering:pixelated;overflow:visible;}
+  .art .sc{position:absolute;right:-1px;bottom:-1px;font-family:var(--mono);
+    font-size:8px;background:#fff;border:1px solid var(--ink);padding:0 2px;line-height:1.3;}
+  .art .pix{position:absolute;}
+  .t1{width:15px;height:15px}
+  .t2{width:27px;height:27px}
+  .t4{width:50px;height:50px}
+  .t10{width:120px;height:120px;border-width:2px;box-shadow:0 0 0 2px var(--accent)}
+  .field .hud{
+    position:absolute;left:10px;top:10px;font-family:var(--mono);font-size:10px;
+    background:#fff;border:1px solid var(--ink);padding:4px 7px;
+  }
+  .field .cd{
+    position:absolute;left:50%;top:10px;transform:translateX(-50%);
+    font-family:var(--mono);font-size:11px;font-weight:700;
+    background:var(--ink);color:#fff;padding:4px 9px;
+  }
+  .field .cd.warn{background:var(--accent)}
+  .field .zoom{
+    position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:4px;
+  }
+  .field .zoom div{
+    width:26px;height:26px;border:1px solid var(--ink);background:#fff;
+    display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;
+  }
+
+  /* ===== お絵描き ===== */
+  .canvas{
+    aspect-ratio:1;width:100%;background:#fff;border:2px solid var(--ink);
+    background-image:
+      repeating-linear-gradient(0deg,transparent 0 calc(100%/16 - 1px),var(--line) calc(100%/16 - 1px) calc(100%/16)),
+      repeating-linear-gradient(90deg,transparent 0 calc(100%/16 - 1px),var(--line) calc(100%/16 - 1px) calc(100%/16));
+    position:relative;
+  }
+  .canvas .demo{position:absolute;background:var(--ink)}
+  .palette{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-top:8px}
+  .palette div{aspect-ratio:1;border:1px solid var(--line)}
+  .palette div.sel{outline:2px solid var(--accent);outline-offset:1px}
+  .tools{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+  .tools div{
+    flex:1;min-width:0;border:1px solid var(--ink);border-radius:6px;
+    padding:6px 0;text-align:center;font-family:var(--mono);font-size:9px;
+  }
+
+  /* ===== チャット一覧 ===== */
+  .avatar{width:38px;height:38px;flex:none;background:var(--fill);border:1px solid var(--ink)}
+
+  /* ===== ルーム ===== */
+  .msg{display:flex;margin-bottom:10px;gap:8px}
+  .msg.me{flex-direction:row-reverse}
+  .bub{max-width:70%;padding:7px 10px;border:1px solid var(--ink);border-radius:10px;font-size:12px;background:#fff}
+  .msg.me .bub{background:var(--fill2)}
+  .stk{width:64px;height:64px;border:2px solid var(--ink);background:var(--fill);position:relative}
+  .stk .save{position:absolute;right:-6px;bottom:-6px;font-family:var(--mono);font-size:8px;
+    background:#fff;border:1px solid var(--ink);padding:1px 3px}
+  .stk.exp{opacity:.45;filter:grayscale(1)}
+  .composer{
+    flex:none;border-top:1px solid var(--line);padding:8px;display:flex;gap:6px;align-items:center;
+  }
+  .composer .field-in{flex:1;border:1px solid var(--line);border-radius:16px;padding:7px 12px;
+    font-size:11px;color:var(--sub)}
+  .composer .ic{width:30px;height:30px;border:1.5px solid var(--ink);border-radius:8px;flex:none;
+    display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;text-align:center;line-height:1}
+
+  /* ===== 図鑑 ===== */
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin:-2px -2px 10px}
+  .tabs div{flex:1;text-align:center;padding:8px 0;font-size:11px;color:var(--sub);border-bottom:2px solid transparent}
+  .tabs div.on{color:var(--ink);font-weight:700;border-bottom-color:var(--ink)}
+  .zgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .zcell{aspect-ratio:1;border:1px solid var(--ink);background:var(--fill);position:relative;
+    display:flex;align-items:flex-end;justify-content:center}
+  .zcell .cnt{font-family:var(--mono);font-size:8px;background:#fff;border:1px solid var(--ink);
+    padding:0 3px;margin-bottom:3px}
+  .zcell.locked{background:repeating-linear-gradient(45deg,#eee 0 6px,#f6f6f6 6px 12px)}
+
+  /* ===== モーダル ===== */
+  .modal-scrim{position:absolute;inset:0;background:rgba(0,0,0,.28);display:flex;align-items:flex-end}
+  .sheet{background:#fff;border-top:2px solid var(--ink);width:100%;padding:14px;border-radius:14px 14px 0 0}
+  .sheet h4{margin:0 0 4px;font-size:14px}
+  .sheet .hint{font-size:10px;color:var(--sub);margin-bottom:10px}
+  .pickgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+  .pickgrid div{aspect-ratio:1;border:1px solid var(--ink);background:var(--fill)}
+
+  /* ===== 設定 ===== */
+  .setrow{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:12px}
+  .setrow .r{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--sub)}
+  .toggle{width:30px;height:18px;border:1px solid var(--ink);border-radius:10px;position:relative;margin-left:auto}
+  .toggle::after{content:"";position:absolute;width:14px;height:14px;background:var(--ink);border-radius:50%;top:1px;right:1px}
+
+  footer{padding:24px 32px 48px;border-top:2px solid var(--ink);background:var(--screen);
+    font-family:var(--mono);font-size:11px;color:var(--sub);line-height:1.8}
+  footer b{color:var(--ink)}
+  .flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+  .flow .s{border:1px solid var(--ink);padding:3px 8px;font-size:10px;background:var(--screen);color:var(--ink)}
+  .flow .a{color:var(--sub)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1><span class="dot"></span>DOT STICKER CHAT — wireframe</h1>
+  <div class="meta">設計フェーズ成果物 / 稲村森田チーム / 全8面 + 状態差分 ・ 注釈の I## は確定済みinvariant番号 ・ 交換機能/グループチャット/1対1個別部屋は今回スコープ外（オープンチャット1本）</div>
+  <div class="legend">
+    <span><span class="sw" style="background:var(--accent)"></span>お題 / CTA</span>
+    <span><span class="sw" style="background:var(--fill);border-style:dashed"></span>ドット絵プレースホルダ</span>
+    <span>保存数でサイズ
+      <span class="sw" style="width:7px;height:7px;background:var(--fill)"></span>
+      <span class="sw" style="width:10px;height:10px;background:var(--fill)"></span>
+      <span class="sw" style="width:14px;height:14px;background:var(--fill)"></span>
+      <span class="sw" style="width:19px;height:19px;background:var(--fill)"></span>
+      1→2→4→10×10</span>
+    <span><span class="inv" style="margin:0">I##</span>不変条件の対応箇所</span>
+  </div>
+</header>
+
+<div class="grid">
+
+  <!-- 1. 広場 初期ズームイン -->
+  <div class="phone">
+    <div class="cap"><span class="num">1</span><b>広場 / 初期ズーム</b></div>
+    <div class="frame">
+      <div class="statusbar"><span>9:41</span><span>DOT PLAZA</span></div>
+      <div class="scr">
+        <div class="appbar">広場 <span class="sub">第7回お題・開催中</span></div>
+        <div class="body" style="padding:0">
+          <div class="field">
+            <div class="cd">⏱ 02:14 / 描ける</div>
+            <div class="hud">◎ 12人 在室</div>
+            <div class="zoom"><div>+</div><div>−</div></div>
+            <div class="center"><div class="o">THEME</div><div class="th">夏のいきもの</div></div>
+
+            <!-- 殿堂級 10×10（保存50+）：景色を支配する主役 -->
+            <div class="art t10" style="left:120px;top:250px">
+              <div class="pix" style="left:18%;top:36%;width:46%;height:24%;background:#3d8ce0"></div>
+              <div class="pix" style="left:55%;top:28%;width:20%;height:40%;background:#3d8ce0"></div>
+              <div class="pix" style="left:60%;top:42%;width:11%;height:12%;background:#1c3d6b"></div>
+              <div class="pix" style="left:23%;top:42%;width:7%;height:7%;background:#fff;outline:1px solid #1a1a1a"></div>
+              <div class="pix" style="left:28%;top:62%;width:22%;height:6%;background:#1c3d6b"></div>
+              <div class="sc">★62</div>
+            </div>
+
+            <!-- 4×4（保存20-49） -->
+            <div class="art t4" style="left:40px;top:110px">
+              <div class="pix" style="left:28%;top:18%;width:38%;height:38%;background:#e0483d"></div>
+              <div class="pix" style="left:20%;top:52%;width:56%;height:30%;background:#f3a23d"></div>
+              <div class="sc">31</div>
+            </div>
+
+            <!-- 2×2（保存5-19） -->
+            <div class="art t2" style="left:215px;top:120px">
+              <div class="pix" style="left:24%;top:24%;width:52%;height:52%;background:#5db85d"></div>
+              <div class="sc">8</div>
+            </div>
+            <div class="art t2" style="left:235px;top:235px"><div class="sc">12</div></div>
+
+            <!-- 1×1（保存0-4）：新作・大多数 -->
+            <div class="art t1" style="left:210px;top:330px"></div>
+            <div class="art t1" style="left:250px;top:300px"></div>
+            <div class="art t1" style="left:70px;top:330px"></div>
+            <div class="art t1" style="left:30px;top:230px"></div>
+            <div class="art t1" style="left:255px;top:175px"></div>
+
+            <div class="fab">描く</div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="on"><span class="ic"></span>広場</div>
+          <div><span class="ic"></span>チャット</div>
+          <div><span class="ic"></span>図鑑</div>
+          <div><span class="ic"></span>設定</div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <div class="t">STATE 1 / アクティブ（opens〜closes）</div>
+      初期は中央お題にズームイン。引くと作品が点在。<b>保存数が多い絵ほどその場で大きく育つ（1→2→4→10×10マス）</b>。殿堂級が景色を支配。新着はポップ出現、在室数とカウントダウンでライブ感。
+      <div><span class="inv a">I10 在室+時間窓</span><span class="inv">I21 ブロック配置・非接触</span><span class="inv a2">I26 保存数=サイズ4段階</span></div>
+    </div>
+  </div>
+
+  <!-- 2. 広場 余韻/失効 -->
+  <div class="phone">
+    <div class="cap"><span class="num">2</span><b>広場 / 余韻・失効まで</b></div>
+    <div class="frame">
+      <div class="statusbar"><span>9:41</span><span>DOT PLAZA</span></div>
+      <div class="scr">
+        <div class="appbar">広場 <span class="sub">作画終了・鑑賞中</span></div>
+        <div class="body" style="padding:0">
+          <div class="field">
+            <div class="cd warn">作画終了 / 失効まで 3:20:00</div>
+            <div class="hud">作品 64枚</div>
+            <div class="zoom"><div>+</div><div>−</div></div>
+            <div class="center"><div class="o">THEME（終了）</div><div class="th">夏のいきもの</div></div>
+
+            <!-- 殿堂級：余韻でもサイズは保存数のまま -->
+            <div class="art t10" style="left:130px;top:255px">
+              <div class="pix" style="left:18%;top:36%;width:46%;height:24%;background:#3d8ce0"></div>
+              <div class="pix" style="left:55%;top:28%;width:20%;height:40%;background:#3d8ce0"></div>
+              <div class="pix" style="left:60%;top:42%;width:11%;height:12%;background:#1c3d6b"></div>
+              <div class="pix" style="left:28%;top:62%;width:22%;height:6%;background:#1c3d6b"></div>
+              <div class="sc">★71</div>
+            </div>
+            <div class="art t4" style="left:45px;top:115px">
+              <div class="pix" style="left:28%;top:18%;width:38%;height:38%;background:#e0483d"></div>
+              <div class="pix" style="left:20%;top:52%;width:56%;height:30%;background:#f3a23d"></div>
+              <div class="sc">38</div>
+            </div>
+            <div class="art t2" style="left:220px;top:115px"><div class="sc">14</div></div>
+            <div class="art t2" style="left:240px;top:230px"><div class="sc">9</div></div>
+            <div class="art t1" style="left:215px;top:335px"></div>
+            <div class="art t1" style="left:255px;top:300px"></div>
+            <div class="art t1" style="left:60px;top:335px"></div>
+            <div class="art t1" style="left:30px;top:235px"></div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="on"><span class="ic"></span>広場</div>
+          <div><span class="ic"></span>チャット</div>
+          <div><span class="ic"></span>図鑑</div>
+          <div><span class="ic"></span>設定</div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <div class="t">STATE 2 / 余韻（closes〜expires）</div>
+      描く・広場保存は終了（FAB消滅）。鑑賞は可。失効までのカウントに切替。チャット保存は別ルートでexpiresまで生存。
+      <div><span class="inv">I9 一斉失効</span><span class="inv">I10 広場保存はclosesで締切</span><span class="inv">I18 チャット保存はexpiresまで</span></div>
+    </div>
+  </div>
+
+  <!-- 3. 広場 ドット絵を開く（拡大・保存） -->
+  <div class="phone">
+    <div class="cap"><span class="num">3</span><b>広場 / ドット絵を開く</b></div>
+    <div class="frame">
+      <div class="statusbar"><span>9:41</span><span>DOT PLAZA</span></div>
+      <div class="scr">
+        <div class="appbar"><span style="font-weight:400">◂ 広場へ戻る</span> <span class="sub">拡大表示</span></div>
+        <div class="body" style="display:flex;flex-direction:column;gap:9px">
+          <div class="lbl" style="text-align:center">実装ではこの枠に 16×16 ドット絵“本体”が描画される</div>
+          <div class="canvas" style="border-width:2px">
+            <div class="demo" style="left:12%;top:38%;width:50%;height:25%;background:#3d8ce0"></div>
+            <div class="demo" style="left:56%;top:31%;width:19%;height:38%;background:#3d8ce0"></div>
+            <div class="demo" style="left:62%;top:44%;width:13%;height:12.5%;background:#1c3d6b"></div>
+            <div class="demo" style="left:19%;top:44%;width:6.25%;height:6.25%;background:#fff;outline:1px solid #1a1a1a;outline-offset:-1px"></div>
+            <div class="demo" style="left:25%;top:63%;width:25%;height:6.25%;background:#1c3d6b"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="avatar" style="width:28px;height:28px"></div>
+            <div><div style="font-size:12px;font-weight:700">いなむら さく</div><div class="lbl">第7回・夏のいきもの</div></div>
+            <span class="pill" style="margin-left:auto">保存 23</span>
+          </div>
+          <div class="btn cta">このシールを保存（normal）</div>
+          <div class="lbl" style="text-align:center">保存済みなら「保存済 ✓」/ 未保有・1枚まで</div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="on"><span class="ic"></span>広場</div>
+        <div><span class="ic"></span>チャット</div>
+        <div><span class="ic"></span>図鑑</div>
+        <div><span class="ic"></span>設定</div>
+      </div>
+    </div>
+    <div class="note">
+      <div class="t">点在する小さな絵をタップ→拡大して本体を確認→保存</div>
+      これが広場の保存動線。実装では各セルに実際の16×16ピクセルが描画される（ワイヤーは簡易表示）。保存＝normal入手で図鑑/トレイへ。
+      <div><span class="inv">I1 未保有・1枚まで</span><span class="inv">I12 広場保存=normal</span><span class="inv a">I10 在室+時間窓</span></div>
+    </div>
+  </div>
+
+  <!-- 4. お絵描き -->
+  <div class="phone">
+    <div class="cap"><span class="num">4</span><b>お絵描き</b></div>
+    <div class="frame">
+      <div class="statusbar"><span>9:41</span><span>DRAW</span></div>
+      <div class="scr">
+        <div class="appbar">お題：夏のいきもの <span class="sub">残り 02:14</span></div>
+        <div class="body">
+          <div class="canvas">
+            <div class="demo" style="left:31%;top:25%;width:12.5%;height:12.5%"></div>
+            <div class="demo" style="left:56%;top:25%;width:12.5%;height:12.5%"></div>
+            <div class="demo" style="left:25%;top:50%;width:50%;height:6.25%"></div>
+            <div class="demo" style="left:37%;top:62%;width:25%;height:6.25%"></div>
+          </div>
+          <div class="palette">
+            <div class="sel" style="background:#1a1a1a"></div><div style="background:#fff"></div>
+            <div style="background:#9b9b9b"></div><div style="background:#e0483d"></div>
+            <div style="background:#f3a23d"></div><div style="background:#f6d63d"></div>
+            <div style="background:#5db85d"></div><div style="background:#3d8ce0"></div>
+            <div style="background:#7b5cff"></div><div style="background:#e07ab5"></div>
+            <div style="background:#8a5a2b"></div><div style="background:#f0c8a0"></div>
+            <div style="background:#2f6b4f"></div><div style="background:#1c3d6b"></div>
+            <div style="background:#6b1c2b"></div><div style="background:#d8d8d8"></div>
+          </div>
+          <div class="tools">
+            <div>ペン</div><div>消し</div><div>スポイト</div><div>バケツ</div>
+          </div>
+          <div class="tools">
+            <div>↩ Undo</div><div>↪ Redo</div><div>全消去</div>
+            <div style="background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700">保存（確定）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <div class="t">広場FAB→ opens〜closes＋在室＋未投稿のみ起動</div>
+      固定16色・index配列で保存。保存=即ポップで広場へ。1お題1枚・一発確定（再投稿/差替不可）。
+      <div><span class="inv">I12 保存=normal</span><span class="inv a">I19 1お題1枚・確定</span><span class="inv">pixels=0〜15 ×256</span></div>
+    </div>
+  </div>
+
+  <!-- 5. チャット（オープン・全員参加） -->
+  <div class="phone">
+    <div class="cap"><span class="num">5</span><b>チャット / オープン</b></div>
+    <div class="frame">
+      <div class="statusbar"><span>9:41</span><span>CHAT</span></div>
+      <div class="scr">
+        <div class="appbar">チャット <span class="sub">ログイン中の全員</span></div>
+        <div class="body" style="overflow:hidden">
+          <div class="msg"><div class="avatar" style="width:26px;height:26px"></div>
+            <div><div class="lbl" style="margin-bottom:2px">もりた</div><div class="bub">これ送るね</div></div></div>
+          <div class="msg"><div class="avatar" style="width:26px;height:26px"></div>
+            <div class="stk"><div class="save">保存</div></div></div>
+          <div class="msg me"><div class="bub">かわいい！保存した</div></div>
+          <div class="msg"><div class="avatar" style="width:26px;height:26px"></div>
+            <div><div class="lbl" style="margin-bottom:2px">いなむら</div><div class="bub">図鑑埋まってきた</div></div></div>
+          <div class="msg"><div class="avatar" style="width:26px;height:26px"></div>
+            <div class="stk exp"></div>
+            <div class="lbl" style="align-self:flex-end">失効済み<br>保存不可</div></div>
+        </div>
+        <div class="composer">
+          <div class="ic">シール</div>
+          <div class="field-in">メッセージ…</div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div><span class="ic"></span>広場</div>
+        <div class="on"><span class="ic"></span>チャット</div>
+        <div><span class="ic"></span>図鑑</div>
+        <div><span class="ic"></span>設定</div>
+      </div>
+    </div>
+    <div class="note">
+      <div class="t">ログイン中の全員が同じ場で会話（1対1・グループ・部屋選択は無し）</div>
+      本文＋シール。送信時に見た目をスナップ保存。未失効&未保有のシールは「保存」表示。失効済みは絵は残るが保存不可。時系列にそのまま流す（強調演出なし）。交換機能は今回スコープ外。
+      <div><span class="inv">I15 履歴は手放し/失効でも不変</span><span class="inv">I18 チャット保存はexpiresまで</span></div>
+    </div>
+  </div>
+
+  <!-- 6. シールピッカー -->
+  <div class="phone">
+    <div class="cap"><span class="num">6</span><b>シールピッカー</b></div>
+    <div class="frame">
+      <div class="statusbar"><span>9:41</span><span>ROOM</span></div>
+      <div class="scr">
+        <div class="appbar">チャット</div>
+        <div class="body" style="opacity:.4">
+          <div class="msg"><div class="avatar" style="width:26px;height:26px"></div><div class="bub">これ送るね</div></div>
+          <div class="msg"><div class="stk"></div></div>
+        </div>
+        <div class="modal-scrim" style="align-items:flex-end">
+          <div class="sheet">
+            <h4>シールを送る</h4>
+            <div class="hint">いま使える札だけ表示（所持・期限内・自作含む）</div>
+            <div class="pickgrid">
+              <div></div><div></div><div></div><div></div>
+              <div></div><div></div><div></div><div></div>
+            </div>
+            <div class="lbl" style="margin-top:8px">失効・未所持は非表示</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <div class="t">シールボタン→ボトムシート</div>
+      トレイ（user_stickers、期限内）から選ぶ。図鑑の「集めた全部」とは別＝今使えるものだけ。
+      <div><span class="inv">I4 トレイ≠永続図鑑</span></div>
+    </div>
+  </div>
+
+  <!-- 7. 図鑑 -->
+  <div class="phone">
+    <div class="cap"><span class="num">7</span><b>図鑑</b></div>
+    <div class="frame">
+      <div class="statusbar"><span>9:41</span><span>ZUKAN</span></div>
+      <div class="scr">
+        <div class="appbar">図鑑 <span class="sub">集めた 12 / 64</span></div>
+        <div class="body">
+          <div class="tabs"><div class="on">集めた</div><div>描いた</div></div>
+          <div class="zgrid">
+            <div class="zcell"></div>
+            <div class="zcell"></div>
+            <div class="zcell"><div class="cnt">31</div></div>
+            <div class="zcell"></div>
+            <div class="zcell"></div>
+            <div class="zcell exp" style="opacity:.5;filter:grayscale(1)"></div>
+            <div class="zcell locked"></div>
+            <div class="zcell"></div>
+            <div class="zcell locked"></div>
+          </div>
+          <div class="lbl" style="margin-top:8px">斜線=未入手 / グレー=失効（永続表示・保存数つき）</div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div><span class="ic"></span>広場</div>
+        <div><span class="ic"></span>チャット</div>
+        <div class="on"><span class="ic"></span>図鑑</div>
+        <div><span class="ic"></span>設定</div>
+      </div>
+    </div>
+    <div class="note">
+      <div class="t">集めた / 描いた の2区分</div>
+      「描いた」は自作に保存数を永続表示（作者除外カウント）。失効後も消えない。トレイ(使える札)は独立画面にせずシールピッカーに集約。
+      <div><span class="inv">I4 永続</span><span class="inv">I5/I6/I7 保存数</span></div>
+    </div>
+  </div>
+
+  <!-- 8. 設定 -->
+  <div class="phone">
+    <div class="cap"><span class="num">8</span><b>設定</b></div>
+    <div class="frame">
+      <div class="statusbar"><span>9:41</span><span>SETTINGS</span></div>
+      <div class="scr">
+        <div class="appbar">設定</div>
+        <div class="body">
+          <div class="setrow"><div class="avatar" style="width:30px;height:30px"></div>
+            <div><div style="font-weight:700">酸っぱ梅</div><div class="lbl">@suppa_ume</div></div>
+            <div class="r">編集 ▸</div></div>
+          <div class="setrow">表示名・ハンドル<div class="r">▸</div></div>
+          <div class="setrow">アバター<div class="r">▸</div></div>
+          <div class="setrow">通知<div class="toggle"></div></div>
+          <div class="setrow">このアプリについて<div class="r">▸</div></div>
+          <div class="setrow">チーム：稲村森田<div class="r">credit</div></div>
+          <div class="setrow" style="color:var(--accent);font-weight:700">ログアウト<div class="r" style="color:var(--accent)">▸</div></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div><span class="ic"></span>広場</div>
+        <div><span class="ic"></span>チャット</div>
+        <div><span class="ic"></span>図鑑</div>
+        <div class="on"><span class="ic"></span>設定</div>
+      </div>
+    </div>
+    <div class="note">
+      <div class="t">アカウント確認・編集の置き場所</div>
+      4タブ目として独立（発表で機能が一望できる）。通知・ログアウト・クレジットを集約。
+      <div><span class="inv">機能要件：account / notify / credit</span></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <b>■ 画面遷移の骨格</b>
+  <div class="flow">
+    <span class="s">広場</span><span class="a">─FAB→</span><span class="s">お絵描き</span><span class="a">─保存→</span><span class="s">広場(ポップ出現)</span>
+  </div>
+  <div class="flow">
+    <span class="s">チャット(オープン)</span><span class="a">─シール→</span><span class="s">ピッカー</span><span class="a">─送信→</span><span class="s">保存(受信側)</span>
+  </div>
+  <div class="flow">
+    <span class="s">図鑑</span><span class="a">＝</span><span class="s">集めた</span><span class="a">/</span><span class="s">描いた(保存数)</span>
+  </div>
+  <br>
+  <b>■ 時間で変わる広場（このアプリの背骨）</b>
+  <div class="flow">
+    <span class="s">opens</span><span class="a">─[STATE1 作画/広場保存/ポップ]→</span><span class="s">closes</span><span class="a">─[STATE2 鑑賞/チャット保存のみ]→</span><span class="s">expires</span><span class="a">─[失効・フィールド入替]→</span><span class="s">次のお題</span>
+  </div>
+  <br>
+  <b>■ 保存数で育つ広場（もう一つの背骨）</b>
+  <div class="flow">
+    <span class="s">保存 0-4 / 1×1</span><span class="a">→</span><span class="s">5-19 / 2×2</span><span class="a">→</span><span class="s">20-49 / 4×4</span><span class="a">→</span><span class="s">50+ / 10×10 殿堂級</span>
+  </div>
+  <div style="margin-top:6px">その場で育つ（引っ越さない）／ブロック=11×11マスに余白を内包して非接触を保証／サイズはDBに持たず保存数からコード導出／失効で全リセット・次のお題は全員1×1から。閾値5/20/50は定数で後調整可。</div>
+  <br>
+  <b>注</b> これは低忠実度ワイヤー（構造・配置・状態・invariant対応の確認用）。色/フォントは実装フェーズで作り込む。固定16色のパレットは画面4に仮置き。広場の点在絵は実装では各ブロックに実際の16×16ドット絵本体が描画される。交換機能・キラ版・グループチャットは今回の提出スコープ外。
+</footer>
+
+</body>
+</html>
