@@ -1,16 +1,10 @@
 // ============================================================
 // services/PromptStateService.ts — お題の時間窓判定
-//
-// class_design.md: PromptStateService（時間窓判定：canDraw, canPlazaSave, canChatSave）
 // 対応invariant: I8, I9, I10, I18
 // ============================================================
 
 import { PromptRepository } from "../repositories/PromptRepository";
 import type { Prompt, PromptState } from "../entities/Prompt";
-
-// --- 型のexport/import ---
-// Prompt.tsで `export type PromptState = ...` としたものを、
-// このファイルでも `import type` で取り込んで戻り値の型として使う。
 
 // routes層に返す「お題＋現在の状態」のセット。
 // このAPIレスポンスの形をここで型として固定しておくことで、
@@ -24,8 +18,7 @@ export class PromptStateService {
   private promptRepository = new PromptRepository();
 
   // GET /api/prompts/current 用。
-  // 「今アクティブなお題、無ければ次に開くお題」はRepository側のSQLで
-  // 既に絞り込まれているので、ここでは状態(state)を計算して付け足すだけ。
+  // 「今アクティブなお題、無ければ次に開くお題」はRepository側のSQLで既に絞り込まれているので、ここでは状態(state)を計算して付け足すだけ。
   async getCurrentPromptWithState(): Promise<PromptWithState | null> {
     const prompt = await this.promptRepository.findCurrent();
     if (!prompt) {
