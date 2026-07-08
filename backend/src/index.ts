@@ -11,6 +11,7 @@ import express from "express";
 import type { Request, Response } from "express";
 import cors from "cors";
 import authRouter from "./routes/auth";
+import promptsRouter from "./routes/prompts";
 
 const port: string = process.env.PORT || "3000";
 
@@ -20,6 +21,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRouter);
+app.use("/api/prompts", promptsRouter);
 
 app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ status: "ok" });
