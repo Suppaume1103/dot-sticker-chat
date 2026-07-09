@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { PoolClient } from "pg";
+import { pool } from "../db/pool";
 import type { UserSticker } from "../entities/UserSticker";
 
 function toUserSticker(row: {
@@ -35,6 +36,19 @@ export class UserStickerRepository {
        RETURNING user_id, sticker_id, acquired_via, acquired_at`,
       [userId, stickerId, acquiredVia],
     );
+    return toUserSticker(result.rows[0]);
+  }
+
+  // ChatServiceがシール送信時に「所持しているか」を確認するための取得。
+  // トランザクションに参加する必要が無いので、insertと違いclientは受け取らずpoolを直接使う。
+  async findByUserAndSticker(userId: string, stickerId: string): Promise<UserSticker | null> {
+    const result = await pool.query(
+      "SELECT user_id, sticker_id, acquired_via, acquired_at FROM user_stickers WHERE user_id = $1 AND sticker_id = $2",
+      [userId, stickerId],
+    );
+    if (result.rows.length === 0) {
+      return null;
+    }
     return toUserSticker(result.rows[0]);
   }
 }

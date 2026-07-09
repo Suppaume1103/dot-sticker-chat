@@ -13,6 +13,7 @@ import cors from "cors";
 import authRouter from "./routes/auth";
 import promptsRouter from "./routes/prompts";
 import stickersRouter from "./routes/stickers";
+import messagesRouter from "./routes/messages";
 
 const port: string = process.env.PORT || "3000";
 
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use("/api/auth", authRouter);
 app.use("/api/prompts", promptsRouter);
 app.use("/api", stickersRouter);
+app.use("/api", messagesRouter);
 
 app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ status: "ok" });
