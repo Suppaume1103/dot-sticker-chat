@@ -83,6 +83,18 @@ export class StickerRepository {
     }));
   }
 
+  // SaveServiceが保存対象のstickerを取得するためのid検索。
+  async findById(id: string): Promise<Sticker | null> {
+    const result = await pool.query(
+      "SELECT id, prompt_id, creator_id, pixels, block_x, block_y, created_at FROM stickers WHERE id = $1",
+      [id],
+    );
+    if (result.rows.length === 0) {
+      return null;
+    }
+    return toSticker(result.rows[0]);
+  }
+
   async findOwnSubmission(promptId: string, userId: string): Promise<Sticker | null> {
     const result = await pool.query(
       "SELECT id, prompt_id, creator_id, pixels, block_x, block_y, created_at FROM stickers WHERE prompt_id = $1 AND creator_id = $2",

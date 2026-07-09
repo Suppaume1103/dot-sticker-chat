@@ -13,10 +13,18 @@ import {
   AlreadySubmittedError,
   InvalidPixelsError,
 } from "../services/StickerSubmissionService";
+import {
+  SaveService,
+  StickerNotFoundError,
+  SelfSaveNotAllowedError,
+  SaveWindowClosedError,
+  AlreadySavedError,
+} from "../services/SaveService";
 
 const router = Router();
 const authService = new AuthService();
 const stickerSubmissionService = new StickerSubmissionService();
+const saveService = new SaveService();
 
 // ヘッダーからBearerトークンを抽出するユーティリティ関数
 function extractBearerToken(req: Request): string | null {
@@ -112,6 +120,52 @@ router.get("/prompts/:id/field", async (req: Request, res: Response) => {
 
   const stickers = await stickerSubmissionService.getFieldData(id);
   res.status(200).json({ stickers });
+});
+
+// POST /api/stickers/:id/save 保存（広場・チャット共通）（I1, I5, I6, I7, I9, I18）
+router.post("/stickers/:id/save", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (typeof id !== "string") {
+    res.status(400).json({ error: "invalid id" });
+    return;
+  }
+
+  const token = extractBearerToken(req);
+  if (!token) {
+    res.status(401).json({ error: "authorization header is required" });
+    return;
+  }
+
+  const { via } = req.body;
+  if (via !== "plaza" && via !== "chat") {
+    res.status(400).json({ error: "via must be 'plaza' or 'chat'" });
+    return;
+  }
+
+  try {
+    const payload = authService.verifyToken(token);
+    const userSticker = await saveService.save(id, payload.userId, via);
+    res.status(201).json({ userSticker });
+  } catch (error: unknown) {
+    if (error instanceof StickerNotFoundError) {
+      res.status(404).json({ error: error.message });
+      return;
+    }
+    if (error instanceof SelfSaveNotAllowedError) {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+    if (error instanceof SaveWindowClosedError) {
+      res.status(403).json({ error: error.message });
+      return;
+    }
+    if (error instanceof AlreadySavedError) {
+      res.status(409).json({ error: error.message });
+      return;
+    }
+    console.error("sticker save failed", error);
+    res.status(500).json({ error: "internal server error" });
+  }
 });
 
 export default router;
