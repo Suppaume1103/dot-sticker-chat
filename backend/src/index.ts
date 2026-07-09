@@ -1,8 +1,5 @@
 // ============================================================
 // index.ts — サーバのエントリポイント（起動処理をまとめるファイル）
-//
-// 今回のゴール：Expressサーバを起動し、/api/health だけを返す最小構成。
-// auth・prompts等の実装は次のステップ以降で追加する（backend/CLAUDE.md参照）。
 // ============================================================
 import "dotenv/config";
 
@@ -14,6 +11,7 @@ import authRouter from "./routes/auth";
 import promptsRouter from "./routes/prompts";
 import stickersRouter from "./routes/stickers";
 import messagesRouter from "./routes/messages";
+import collectionsRouter from "./routes/collections";
 
 const port: string = process.env.PORT || "3000";
 
@@ -26,6 +24,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/prompts", promptsRouter);
 app.use("/api", stickersRouter);
 app.use("/api", messagesRouter);
+app.use("/api", collectionsRouter);
 
 app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ status: "ok" });

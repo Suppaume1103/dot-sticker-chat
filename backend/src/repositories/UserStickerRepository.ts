@@ -5,6 +5,30 @@
 import type { PoolClient } from "pg";
 import { pool } from "../db/pool";
 import type { UserSticker } from "../entities/UserSticker";
+import type { Sticker } from "../entities/Sticker";
+
+function toSticker(row: {
+  id: string;
+  prompt_id: string;
+  creator_id: string;
+  pixels: number[];
+  block_x: number;
+  block_y: number;
+  created_at: Date;
+}): Sticker {
+  return {
+    id: row.id,
+    promptId: row.prompt_id,
+    creatorId: row.creator_id,
+    pixels: row.pixels,
+    blockX: row.block_x,
+    blockY: row.block_y,
+    createdAt: row.created_at,
+  };
+}
+
+// トレイ（GET /api/users/me/tray）用。Stickerに、誰がどう手に入れたか（acquiredVia/acquiredAt）を足しただけの交差型。
+export type TrayItem = Sticker & { acquiredVia: "plaza" | "chat"; acquiredAt: Date };
 
 function toUserSticker(row: {
   user_id: string;
@@ -50,5 +74,26 @@ export class UserStickerRepository {
       return null;
     }
     return toUserSticker(result.rows[0]);
+  }
+
+  // I1: 「使える札」は期限内（expires_at > now()）のものだけ。
+  // promptsとJOINして期限判定をWHERE句で行う
+  async findTrayForUser(userId: string): Promise<TrayItem[]> {
+    const result = await pool.query(
+      `SELECT
+         s.id, s.prompt_id, s.creator_id, s.pixels, s.block_x, s.block_y, s.created_at,
+         u.acquired_via, u.acquired_at
+       FROM user_stickers u
+       JOIN stickers s ON s.id = u.sticker_id
+       JOIN prompts p ON p.id = s.prompt_id
+       WHERE u.user_id = $1 AND p.expires_at > now()
+       ORDER BY u.acquired_at DESC`,
+      [userId],
+    );
+    return result.rows.map((row) => ({
+      ...toSticker(row),
+      acquiredVia: row.acquired_via,
+      acquiredAt: row.acquired_at,
+    }));
   }
 }
