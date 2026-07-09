@@ -62,4 +62,21 @@ export class UserRepository {
       createdAt: row.created_at,
     };
   }
+
+  // 設定画面からのdisplay_name変更。「空文字にできない」等の判断は呼び出し元のUserSettingsServiceで行う。
+  // UserSettingsServiceで検証済みの値だけがここに渡ってくる前提。
+  async updateDisplayName(id: string, displayName: string): Promise<User> {
+    const result = await pool.query(
+      "UPDATE users SET display_name = $1 WHERE id = $2 RETURNING id, handle, display_name, created_at",
+      [displayName, id],
+    );
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      handle: row.handle,
+      displayName: row.display_name,
+      createdAt: row.created_at,
+    };
+  }
 }

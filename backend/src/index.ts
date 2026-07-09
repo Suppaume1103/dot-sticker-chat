@@ -12,6 +12,7 @@ import promptsRouter from "./routes/prompts";
 import stickersRouter from "./routes/stickers";
 import messagesRouter from "./routes/messages";
 import collectionsRouter from "./routes/collections";
+import usersRouter from "./routes/users";
 
 const port: string = process.env.PORT || "3000";
 
@@ -25,6 +26,7 @@ app.use("/api/prompts", promptsRouter);
 app.use("/api", stickersRouter);
 app.use("/api", messagesRouter);
 app.use("/api", collectionsRouter);
+app.use("/api", usersRouter);
 
 app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ status: "ok" });
