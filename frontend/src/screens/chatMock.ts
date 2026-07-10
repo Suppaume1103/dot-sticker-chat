@@ -2,7 +2,7 @@
 import type { Message } from '../types';
 import { MOCK_STICKERS } from './plazaMock';
 
-export const MOCK_SELF_ID = 999;
+export const MOCK_SELF_ID = '999';
 
 export interface MockChatMessage extends Message {
   senderName: string;
@@ -11,23 +11,23 @@ export interface MockChatMessage extends Message {
 
 export const MOCK_MESSAGES: MockChatMessage[] = [
   {
-    id: 1,
-    senderId: 201,
+    id: '1',
+    senderId: '201',
     senderName: '□□',
     kind: 'text',
     body: 'これ送るね',
     createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
   },
   {
-    id: 2,
-    senderId: 201,
+    id: '2',
+    senderId: '201',
     senderName: '□□',
     kind: 'sticker',
     stickerId: MOCK_STICKERS[2].id,
     createdAt: new Date(Date.now() - 9 * 60 * 1000).toISOString(),
   },
   {
-    id: 3,
+    id: '3',
     senderId: MOCK_SELF_ID,
     senderName: '自分',
     kind: 'text',
@@ -35,19 +35,19 @@ export const MOCK_MESSAGES: MockChatMessage[] = [
     createdAt: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
   },
   {
-    id: 4,
-    senderId: 202,
+    id: '4',
+    senderId: '202',
     senderName: '〇〇',
     kind: 'text',
     body: '図鑑埋まってきた',
     createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
   },
   {
-    id: 5,
-    senderId: 203,
+    id: '5',
+    senderId: '203',
     senderName: '△△',
     kind: 'sticker',
-    stickerId: 9999, // 失効済み・存在しないsticker想定
+    stickerId: '9999', // 失効済み・存在しないsticker想定
     createdAt: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
     expired: true,
   },

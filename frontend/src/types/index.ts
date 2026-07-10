@@ -1,14 +1,15 @@
 export type PromptState = 'active' | 'grace' | 'waiting';
 
+// backendのidはpg(BIGSERIAL)がstringで返すため、フロント側もstringで統一する。
 export interface User {
-  id: number;
+  id: string;
   handle: string;
   displayName: string;
   createdAt: string;
 }
 
 export interface Prompt {
-  id: number;
+  id: string;
   theme: string;
   opensAt: string;
   closesAt: string;
@@ -16,9 +17,9 @@ export interface Prompt {
 }
 
 export interface Sticker {
-  id: number;
-  promptId: number;
-  creatorId: number;
+  id: string;
+  promptId: string;
+  creatorId: string;
   pixels: number[]; // 256要素のパレットindex配列(0-15)
   blockX: number;
   blockY: number;
@@ -31,14 +32,14 @@ export interface FieldSticker extends Sticker {
 }
 
 export interface Message {
-  id: number;
-  senderId: number;
+  id: string;
+  senderId: string;
   kind: 'text' | 'sticker';
   body?: string;
-  stickerId?: number;
+  stickerId?: string;
   createdAt: string;
 }
 
 export interface HealthResponse {
-  ok: boolean;
+  status: string;
 }

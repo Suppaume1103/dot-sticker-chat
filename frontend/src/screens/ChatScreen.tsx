@@ -6,8 +6,9 @@ import { apiClient } from '../api/ApiClient';
 import { MOCK_STICKERS } from './plazaMock';
 import { MOCK_MESSAGES, MOCK_SELF_ID, MOCK_TRAY, type MockChatMessage } from './chatMock';
 
-function nextId(messages: MockChatMessage[]): number {
-  return Math.max(0, ...messages.map((m) => m.id)) + 1;
+function nextId(messages: MockChatMessage[]): string {
+  const maxId = Math.max(0, ...messages.map((m) => Number(m.id)));
+  return String(maxId + 1);
 }
 
 function ChatScreen() {
@@ -34,7 +35,7 @@ function ChatScreen() {
     apiClient.sendMessage({ kind: 'text', body }).catch(() => {});
   };
 
-  const sendSticker = (stickerId: number) => {
+  const sendSticker = (stickerId: string) => {
     setMessages((prev) => [
       ...prev,
       {
@@ -94,7 +95,7 @@ function ChatScreen() {
   );
 }
 
-function StickerBubble({ stickerId, expired }: { stickerId?: number; expired?: boolean }) {
+function StickerBubble({ stickerId, expired }: { stickerId?: string; expired?: boolean }) {
   const sticker = MOCK_STICKERS.find((s) => s.id === stickerId);
   const isExpired = expired || !sticker;
 

@@ -1,4 +1,12 @@
-import type { FieldSticker, HealthResponse, Message, Sticker, User } from '../types';
+import type {
+  FieldSticker,
+  HealthResponse,
+  Message,
+  Prompt,
+  PromptState,
+  Sticker,
+  User,
+} from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
@@ -20,7 +28,10 @@ class ApiClient {
     });
 
     if (!res.ok) {
-      throw new Error(`API error: ${res.status} ${res.statusText}`);
+      // backendは失敗時に { error: string } を返すので、それをメッセージとして使う。
+      const body = await res.json().catch(() => null);
+      const message = body && typeof body.error === 'string' ? body.error : res.statusText;
+      throw new Error(`API error: ${res.status} ${message}`);
     }
 
     return res.json() as Promise<T>;
@@ -30,44 +41,110 @@ class ApiClient {
     return this.request<HealthResponse>('/api/health');
   }
 
-  submitSticker(promptId: number, pixels: number[]): Promise<Sticker> {
-    return this.request<Sticker>(`/api/prompts/${promptId}/stickers`, {
+  // Auth APIs
+  async signup(handle: string, displayName: string): Promise<{ user: User; token: string }> {
+    return this.request('/api/auth/signup', {
       method: 'POST',
-      body: JSON.stringify({ pixels }),
+      body: JSON.stringify({ handle, displayName }),
     });
   }
 
-  getMessages(before?: number, limit = 50): Promise<Message[]> {
-    const params = new URLSearchParams();
-    if (before) params.set('before', String(before));
-    params.set('limit', String(limit));
-    return this.request<Message[]>(`/api/messages?${params.toString()}`);
+  async login(handle: string): Promise<{ user: User; token: string }> {
+    return this.request('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ handle }),
+    });
   }
 
-  sendMessage(body: { kind: 'text'; body: string } | { kind: 'sticker'; stickerId: number }): Promise<Message> {
-    return this.request<Message>('/api/messages', {
+  async getMe(): Promise<User> {
+    const { user } = await this.request<{ user: User }>('/api/auth/me');
+    return user;
+  }
+
+  async getCurrentPrompt(): Promise<{ prompt: Prompt; state: PromptState }> {
+    return this.request('/api/prompts/current');
+  }
+
+  async getPrompt(id: string): Promise<{ prompt: Prompt; state: PromptState }> {
+    return this.request(`/api/prompts/${id}`);
+  }
+
+  async getField(promptId: string): Promise<FieldSticker[]> {
+    const { stickers } = await this.request<{ stickers: FieldSticker[] }>(
+      `/api/prompts/${promptId}/field`,
+    );
+    return stickers;
+  }
+
+  async getOwnSubmission(promptId: string): Promise<Sticker | null> {
+    const result = await this.request<{ submitted: boolean; sticker?: Sticker }>(
+      `/api/prompts/${promptId}/stickers/me`,
+    );
+    return result.submitted && result.sticker ? result.sticker : null;
+  }
+
+  async submitSticker(promptId: string, pixels: number[]): Promise<Sticker> {
+    const { sticker } = await this.request<{ sticker: Sticker }>(
+      `/api/prompts/${promptId}/stickers`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ pixels }),
+      },
+    );
+    return sticker;
+  }
+
+  async saveSticker(stickerId: string, via: 'plaza' | 'chat'): Promise<void> {
+    await this.request(`/api/stickers/${stickerId}/save`, {
+      method: 'POST',
+      body: JSON.stringify({ via }),
+    });
+  }
+
+  async getMessages(before?: string, limit = 50): Promise<Message[]> {
+    const params = new URLSearchParams();
+    if (before) params.set('before', before);
+    params.set('limit', String(limit));
+    const { messages } = await this.request<{ messages: Message[] }>(
+      `/api/messages?${params.toString()}`,
+    );
+    return messages;
+  }
+
+  async sendMessage(
+    body: { kind: 'text'; body: string } | { kind: 'sticker'; stickerId: string },
+  ): Promise<Message> {
+    const { message } = await this.request<{ message: Message }>('/api/messages', {
       method: 'POST',
       body: JSON.stringify(body),
     });
+    return message;
   }
 
-  getCollections(): Promise<FieldSticker[]> {
-    return this.request<FieldSticker[]>('/api/users/me/collections');
+  async getCollections(): Promise<FieldSticker[]> {
+    const { collections } = await this.request<{ collections: FieldSticker[] }>(
+      '/api/users/me/collections',
+    );
+    return collections;
   }
 
-  getCreated(): Promise<FieldSticker[]> {
-    return this.request<FieldSticker[]>('/api/users/me/created');
+  async getCreated(): Promise<FieldSticker[]> {
+    const { created } = await this.request<{ created: FieldSticker[] }>('/api/users/me/created');
+    return created;
   }
 
-  getTray(): Promise<Sticker[]> {
-    return this.request<Sticker[]>('/api/users/me/tray');
+  async getTray(): Promise<Sticker[]> {
+    const { tray } = await this.request<{ tray: Sticker[] }>('/api/users/me/tray');
+    return tray;
   }
 
-  updateMe(patch: { displayName?: string }): Promise<User> {
-    return this.request<User>('/api/users/me', {
+  async updateMe(patch: { displayName?: string }): Promise<User> {
+    const { user } = await this.request<{ user: User }>('/api/users/me', {
       method: 'PATCH',
-      body: JSON.stringify(patch),
+      // backendはsnake_caseの display_name をbodyキーとして期待する。
+      body: JSON.stringify({ display_name: patch.displayName }),
     });
+    return user;
   }
 }
 

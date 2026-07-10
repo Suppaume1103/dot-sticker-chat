@@ -39,7 +39,7 @@ function templateToPixels(template: string[]): number[] {
 }
 
 export const MOCK_PROMPT: Prompt = {
-  id: 7,
+  id: '7',
   theme: '夏のいきもの',
   opensAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
   closesAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
@@ -59,9 +59,9 @@ export interface MockField {
 // 重ならないことを確認済み
 export const MOCK_STICKERS: (FieldSticker & MockField)[] = [
   {
-    id: 1,
-    promptId: 7,
-    creatorId: 100,
+    id: '1',
+    promptId: '7',
+    creatorId: '100',
     blockX: 3,
     blockY: 8,
     createdAt: '',
@@ -73,9 +73,9 @@ export const MOCK_STICKERS: (FieldSticker & MockField)[] = [
     creatorName: '〇〇 さく',
   },
   {
-    id: 2,
-    promptId: 7,
-    creatorId: 101,
+    id: '2',
+    promptId: '7',
+    creatorId: '101',
     blockX: 1,
     blockY: 3,
     createdAt: '',
@@ -86,9 +86,9 @@ export const MOCK_STICKERS: (FieldSticker & MockField)[] = [
     top: 110,
   },
   {
-    id: 3,
-    promptId: 7,
-    creatorId: 102,
+    id: '3',
+    promptId: '7',
+    creatorId: '102',
     blockX: 6,
     blockY: 4,
     createdAt: '',
@@ -99,9 +99,9 @@ export const MOCK_STICKERS: (FieldSticker & MockField)[] = [
     top: 120,
   },
   {
-    id: 4,
-    promptId: 7,
-    creatorId: 103,
+    id: '4',
+    promptId: '7',
+    creatorId: '103',
     blockX: 7,
     blockY: 7,
     createdAt: '',
@@ -111,9 +111,9 @@ export const MOCK_STICKERS: (FieldSticker & MockField)[] = [
     left: 235,
     top: 235,
   },
-  { id: 5, promptId: 7, creatorId: 104, blockX: 6, blockY: 9, createdAt: '', pixels: [], saveCount: 0, tier: 1, left: 100, top: 330 },
-  { id: 6, promptId: 7, creatorId: 105, blockX: 8, blockY: 8, createdAt: '', pixels: [], saveCount: 2, tier: 1, left: 300, top: 300 },
-  { id: 7, promptId: 7, creatorId: 106, blockX: 2, blockY: 9, createdAt: '', pixels: [], saveCount: 1, tier: 1, left: 70, top: 330 },
-  { id: 8, promptId: 7, creatorId: 107, blockX: 1, blockY: 6, createdAt: '', pixels: [], saveCount: 3, tier: 1, left: 30, top: 230 },
-  { id: 9, promptId: 7, creatorId: 108, blockX: 8, blockY: 5, createdAt: '', pixels: [], saveCount: 0, tier: 1, left: 255, top: 175 },
+  { id: '5', promptId: '7', creatorId: '104', blockX: 6, blockY: 9, createdAt: '', pixels: [], saveCount: 0, tier: 1, left: 100, top: 330 },
+  { id: '6', promptId: '7', creatorId: '105', blockX: 8, blockY: 8, createdAt: '', pixels: [], saveCount: 2, tier: 1, left: 300, top: 300 },
+  { id: '7', promptId: '7', creatorId: '106', blockX: 2, blockY: 9, createdAt: '', pixels: [], saveCount: 1, tier: 1, left: 70, top: 330 },
+  { id: '8', promptId: '7', creatorId: '107', blockX: 1, blockY: 6, createdAt: '', pixels: [], saveCount: 3, tier: 1, left: 30, top: 230 },
+  { id: '9', promptId: '7', creatorId: '108', blockX: 8, blockY: 5, createdAt: '', pixels: [], saveCount: 0, tier: 1, left: 255, top: 175 },
 ];

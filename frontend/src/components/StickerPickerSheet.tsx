@@ -4,7 +4,7 @@ import type { MockField } from '../screens/plazaMock';
 
 interface StickerPickerSheetProps {
   tray: (FieldSticker & MockField)[];
-  onPick: (stickerId: number) => void;
+  onPick: (stickerId: string) => void;
   onClose: () => void;
 }
 
