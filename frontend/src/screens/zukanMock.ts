@@ -5,10 +5,11 @@ export interface ZukanCell {
   id: number;
   pixels?: number[];
   saveCount?: number;
-  locked?: boolean; // 未入手
   expired?: boolean; // 失効（永続表示・保存数つき）
 }
 
+// 図鑑はappend-onlyの入手台帳（I4）。Pokédexのような固定総数は存在しないため、
+// 「未入手」の空枠は表現せず、実際に持っている作品だけを並べる
 export const MOCK_COLLECTED: ZukanCell[] = [
   { id: 1, pixels: MOCK_STICKERS[0].pixels },
   { id: 2, pixels: [] },
@@ -16,9 +17,7 @@ export const MOCK_COLLECTED: ZukanCell[] = [
   { id: 4, pixels: [] },
   { id: 5, pixels: [] },
   { id: 6, pixels: [], expired: true },
-  { id: 7, locked: true },
   { id: 8, pixels: [] },
-  { id: 9, locked: true },
 ];
 
 export const MOCK_CREATED: ZukanCell[] = MOCK_STICKERS.map((s) => ({
