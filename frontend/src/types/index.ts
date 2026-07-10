@@ -40,6 +40,17 @@ export interface Message {
   createdAt: string;
 }
 
+// backendのSocketGatewayが配信する message:new の生payload。
+// null許容（Message型はundefined許容）で、createdAtはSocket.IOのJSONシリアライズによりISO文字列で届く。
+export interface RawMessagePayload {
+  id: string;
+  senderId: string;
+  kind: 'text' | 'sticker';
+  body: string | null;
+  stickerId: string | null;
+  createdAt: string;
+}
+
 export interface HealthResponse {
   status: string;
 }

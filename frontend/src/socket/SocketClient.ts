@@ -1,5 +1,5 @@
 import { io, type Socket } from 'socket.io-client';
-import type { FieldSticker, Message, Prompt, PromptState } from '../types';
+import type { FieldSticker, Prompt, PromptState, RawMessagePayload } from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
@@ -20,7 +20,7 @@ export interface ServerToClientEvents {
   }) => void;
   'prompt:state_changed': (payload: { promptId: string; state: PromptState; prompt: Prompt }) => void;
   'field:presence': (payload: { count: number }) => void;
-  'message:new': (payload: Message) => void;
+  'message:new': (payload: RawMessagePayload) => void;
 }
 
 class SocketClient {

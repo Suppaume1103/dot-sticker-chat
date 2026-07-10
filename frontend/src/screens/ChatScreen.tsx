@@ -2,53 +2,27 @@ import { useState } from 'react';
 import PixelCanvas from '../components/PixelCanvas';
 import StickerPickerSheet from '../components/StickerPickerSheet';
 import { Avatar } from '../components/icons/Avatar';
-import { apiClient } from '../api/ApiClient';
-import { MOCK_STICKERS } from './plazaMock';
-import { MOCK_MESSAGES, MOCK_SELF_ID, MOCK_TRAY, type MockChatMessage } from './chatMock';
-
-function nextId(messages: MockChatMessage[]): string {
-  const maxId = Math.max(0, ...messages.map((m) => Number(m.id)));
-  return String(maxId + 1);
-}
+import { useAuth } from '../stores/AuthStore';
+import { sendText as sendTextMessage, sendSticker as sendStickerMessage, useChat } from '../stores/ChatStore';
+import { usePlaza } from '../stores/PlazaStore';
+import { MOCK_TRAY } from './chatMock';
 
 function ChatScreen() {
-  const [messages, setMessages] = useState<MockChatMessage[]>(MOCK_MESSAGES);
+  const { user } = useAuth();
+  const { messages } = useChat();
   const [text, setText] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const sendText = () => {
     const body = text.trim();
     if (!body) return;
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: nextId(prev),
-        senderId: MOCK_SELF_ID,
-        senderName: '自分',
-        kind: 'text',
-        body,
-        createdAt: new Date().toISOString(),
-      },
-    ]);
     setText('');
-    // TODO: SocketClient配信を待たず楽観的更新。backend実装後は失敗時のロールバックを追加
-    apiClient.sendMessage({ kind: 'text', body }).catch(() => {});
+    void sendTextMessage(body);
   };
 
   const sendSticker = (stickerId: string) => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: nextId(prev),
-        senderId: MOCK_SELF_ID,
-        senderName: '自分',
-        kind: 'sticker',
-        stickerId,
-        createdAt: new Date().toISOString(),
-      },
-    ]);
     setPickerOpen(false);
-    apiClient.sendMessage({ kind: 'sticker', stickerId }).catch(() => {});
+    void sendStickerMessage(stickerId);
   };
 
   return (
@@ -61,14 +35,14 @@ function ChatScreen() {
       </header>
       <div className="body chat-body">
         {messages.map((m) => {
-          const mine = m.senderId === MOCK_SELF_ID;
+          const mine = m.senderId === user?.id;
           return (
             <div key={m.id} className={mine ? 'msg me' : 'msg'}>
               {!mine && <Avatar seed={m.senderId} size={26} />}
               <div>
-                {!mine && <div className="lbl" style={{ marginBottom: 2 }}>{m.senderName}</div>}
+                {!mine && <div className="lbl" style={{ marginBottom: 2 }}>{m.senderId}</div>}
                 {m.kind === 'text' && <div className="bub">{m.body}</div>}
-                {m.kind === 'sticker' && <StickerBubble stickerId={m.stickerId} expired={m.expired} />}
+                {m.kind === 'sticker' && <StickerBubble stickerId={m.stickerId} />}
               </div>
             </div>
           );
@@ -95,9 +69,10 @@ function ChatScreen() {
   );
 }
 
-function StickerBubble({ stickerId, expired }: { stickerId?: string; expired?: boolean }) {
-  const sticker = MOCK_STICKERS.find((s) => s.id === stickerId);
-  const isExpired = expired || !sticker;
+function StickerBubble({ stickerId }: { stickerId?: string }) {
+  const { stickers } = usePlaza();
+  const sticker = stickers.find((s) => s.id === stickerId);
+  const isExpired = !sticker;
 
   return (
     <div>
