@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Avatar } from '../components/icons/Avatar';
 import { apiClient } from '../api/ApiClient';
+import { toggleTheme, useTheme } from '../stores/ThemeStore';
 
 type ConnectionStatus = 'checking' | 'ok' | 'error';
 
@@ -9,6 +11,7 @@ const MOCK_USER = { displayName: '酸っぱ梅', handle: 'suppa_ume' };
 function SettingsScreen() {
   const [status, setStatus] = useState<ConnectionStatus>('checking');
   const [notify, setNotify] = useState(true);
+  const theme = useTheme();
 
   useEffect(() => {
     apiClient
@@ -19,10 +22,14 @@ function SettingsScreen() {
 
   return (
     <section className="scr">
-      <header className="appbar">設定</header>
+      <header className="appbar">
+        <span>
+          <span className="mark">■</span>設定
+        </span>
+      </header>
       <div className="body">
         <div className="setrow">
-          <div className="avatar" style={{ width: 30, height: 30 }} />
+          <Avatar seed={MOCK_USER.handle} size={30} />
           <div>
             <div style={{ fontWeight: 700 }}>{MOCK_USER.displayName}</div>
             <div className="lbl">@{MOCK_USER.handle}</div>
@@ -42,6 +49,15 @@ function SettingsScreen() {
             className={notify ? 'toggle on' : 'toggle'}
             onClick={() => setNotify((v) => !v)}
             aria-label="通知の切り替え"
+          />
+        </div>
+        <div className="setrow">
+          ダークモード
+          <button
+            type="button"
+            className={theme === 'dark' ? 'toggle on' : 'toggle'}
+            onClick={toggleTheme}
+            aria-label="ダークモードの切り替え"
           />
         </div>
         <div className="setrow">

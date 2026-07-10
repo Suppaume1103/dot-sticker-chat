@@ -1,15 +1,35 @@
 :root {
+  /* Neo-Retro Handheld: 暗い液晶画面に浮かぶドット絵をコンセプトにしたダークパレット */
+  --bg: #12151a;
+  --surface: #1e232b;
+  --surface2: #262d38;
+  --ink: #eaeaea;
+  --sub: #8b93a3;
+  --line: #2e3644;
+  --accent: #e0483d;
+  --blue: #3d8ce0;
+  --yellow: #f6d63d;
+  --green: #5db85d;
+  --pink: #e07ab5;
+  --on-accent: #14161a;
+
+  font: 16px/1.5 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  color-scheme: dark;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+:root[data-theme='light'] {
+  /* もとのホワイト基調（紙・白パネル）テーマ */
+  --bg: #f7f6f3;
+  --surface: #ffffff;
+  --surface2: #e9e9e9;
   --ink: #1a1a1a;
   --sub: #6b6b6b;
   --line: #cfcfcf;
-  --paper: #f7f6f3;
-  --screen: #ffffff;
-  --accent: #e0483d;
+  --on-accent: #1a1a1a;
 
-  font: 16px/1.5 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
-  color-scheme: light dark;
-  color: var(--ink);
-  background: var(--paper);
+  color-scheme: light;
 }
 
 * {
@@ -24,6 +44,6 @@ body {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100svh;
-  background: var(--screen);
+  background: var(--bg);
   border-inline: 1px solid var(--line);
 }

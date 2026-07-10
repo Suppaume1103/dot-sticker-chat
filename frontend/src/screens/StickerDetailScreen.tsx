@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import PixelCanvas from '../components/PixelCanvas';
+import { Avatar } from '../components/icons/Avatar';
 import { MOCK_PROMPT, MOCK_STICKERS } from './plazaMock';
 
 function StickerDetailScreen() {
@@ -28,7 +29,7 @@ function StickerDetailScreen() {
       <div className="body" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         <PixelCanvas pixels={sticker.pixels ?? []} size={280} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div className="avatar" />
+          <Avatar seed={sticker.creatorName ?? sticker.id} size={32} />
           <div>
             <div style={{ fontSize: 12, fontWeight: 700 }}>{sticker.creatorName ?? '作者不明'}</div>
             <div className="lbl">

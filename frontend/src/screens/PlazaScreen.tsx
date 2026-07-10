@@ -11,7 +11,9 @@ function PlazaScreen() {
   return (
     <section className="scr">
       <header className="appbar">
-        広場
+        <span>
+          <span className="mark">■</span>広場
+        </span>
         <span className="sub">
           第7回お題・{state === 'active' ? '開催中' : '作画終了・鑑賞中'}
         </span>

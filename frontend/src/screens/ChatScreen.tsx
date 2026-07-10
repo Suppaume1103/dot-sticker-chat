@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PixelCanvas from '../components/PixelCanvas';
 import StickerPickerSheet from '../components/StickerPickerSheet';
+import { Avatar } from '../components/icons/Avatar';
 import { apiClient } from '../api/ApiClient';
 import { MOCK_STICKERS } from './plazaMock';
 import { MOCK_MESSAGES, MOCK_SELF_ID, MOCK_TRAY, type MockChatMessage } from './chatMock';
@@ -52,14 +53,17 @@ function ChatScreen() {
   return (
     <section className="scr">
       <header className="appbar">
-        チャット <span className="sub">ログイン中の全員</span>
+        <span>
+          <span className="mark">■</span>チャット
+        </span>
+        <span className="sub">ログイン中の全員</span>
       </header>
       <div className="body chat-body">
         {messages.map((m) => {
           const mine = m.senderId === MOCK_SELF_ID;
           return (
             <div key={m.id} className={mine ? 'msg me' : 'msg'}>
-              {!mine && <div className="avatar" style={{ width: 26, height: 26 }} />}
+              {!mine && <Avatar seed={m.senderId} size={26} />}
               <div>
                 {!mine && <div className="lbl" style={{ marginBottom: 2 }}>{m.senderName}</div>}
                 {m.kind === 'text' && <div className="bub">{m.body}</div>}
