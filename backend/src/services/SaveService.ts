@@ -9,6 +9,7 @@ import { PromptRepository } from "../repositories/PromptRepository";
 import { UserStickerRepository } from "../repositories/UserStickerRepository";
 import { CollectionRepository } from "../repositories/CollectionRepository";
 import { TierService } from "./TierService";
+import { PromptStateService } from "./PromptStateService";
 import { socketGateway } from "../infrastructure/SocketGateway";
 import type { UserSticker } from "../entities/UserSticker";
 
@@ -63,6 +64,7 @@ export class SaveService {
   private userStickerRepository = new UserStickerRepository();
   private collectionRepository = new CollectionRepository();
   private tierService = new TierService();
+  private promptStateService = new PromptStateService();
 
   async save(stickerId: string, userId: string, via: "plaza" | "chat"): Promise<UserSticker> {
     const sticker = await this.stickerRepository.findById(stickerId);
@@ -81,10 +83,11 @@ export class SaveService {
       throw new StickerNotFoundError(stickerId);
     }
 
-    const now = new Date();
-    // I9: 広場保存はclosesまで。I18: チャット保存はexpiresまで（closes後もexpiresまでは可能）。
-    const deadline = via === "plaza" ? prompt.closesAt : prompt.expiresAt;
-    if (now > deadline) {
+    // I9・I10: 広場保存はclosesまで、かつ在室していること。I18: チャット保存はexpiresまで（在室は問わない）。
+    const canSave = via === "plaza"
+      ? this.promptStateService.canPlazaSave(prompt, userId)
+      : this.promptStateService.canChatSave(prompt);
+    if (!canSave) {
       throw new SaveWindowClosedError(via);
     }
 

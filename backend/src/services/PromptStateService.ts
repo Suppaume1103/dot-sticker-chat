@@ -4,6 +4,7 @@
 // ============================================================
 
 import { PromptRepository } from "../repositories/PromptRepository";
+import { socketGateway } from "../infrastructure/SocketGateway";
 import type { Prompt, PromptState } from "../entities/Prompt";
 
 // routes層に返す「お題＋現在の状態」のセット。
@@ -40,19 +41,15 @@ export class PromptStateService {
   // 引数として直接Promptを受け取る設計にしている（呼び出し側で既に
   // 取得済みのPromptを渡す想定。DBへの再取得はしない）。
 
-  // I10: お絵描きは opens〜closes の間だけ。
-  // 本来はここに「在室しているか」のSocket.IO在室チェックも必要（I10の
-  // もう半分の条件）だが、SocketGatewayは未実装のため、現時点では
-  // 時間窓の判定のみ行う。SocketGateway実装時にこのメソッドへ
-  // 在室チェックを追加する必要がある点に注意。
-  canDraw(prompt: Prompt): boolean {
-    return prompt.resolveState(new Date()) === "active";
+  // I10: お絵描きは「opens〜closes（＝"active"）」かつ「その広場に在室している」の両方を満たす必要がある。
+  // 在室しているかどうかはSocketGatewayが持つ在室情報（field:join/leaveで更新）を問い合わせる。
+  canDraw(prompt: Prompt, userId: string): boolean {
+    return prompt.resolveState(new Date()) === "active" && socketGateway.isPresent(prompt.id, userId);
   }
 
-  // I10: 広場保存もお絵描きと同じく opens〜closes（＝"active"）の間だけ。
-  // 在室チェックについてはcanDrawと同様の注記。
-  canPlazaSave(prompt: Prompt): boolean {
-    return prompt.resolveState(new Date()) === "active";
+  // I10: 広場保存もお絵描きと同じく「opens〜closes（＝"active"）」かつ「在室」の両方を満たす必要がある。
+  canPlazaSave(prompt: Prompt, userId: string): boolean {
+    return prompt.resolveState(new Date()) === "active" && socketGateway.isPresent(prompt.id, userId);
   }
 
   // I18: チャット保存は closes 後も expires までは可能。

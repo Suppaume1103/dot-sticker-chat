@@ -63,9 +63,8 @@ export class StickerSubmissionService {
       throw new PromptNotFoundError(promptId);
     }
 
-    // I10: 在室チェックはSocketGateway未実装のため未対応（PromptStateServiceのコメント参照）。
-    // 現時点では時間窓（opens〜closes）のみ判定する。
-    if (!this.promptStateService.canDraw(prompt)) {
+    // I10: 時間窓（opens〜closes）に加えて、SocketGateway経由の在室チェックも行う。
+    if (!this.promptStateService.canDraw(prompt, creatorId)) {
       throw new PromptNotDrawableError(promptId);
     }
 
