@@ -66,6 +66,37 @@ export class SaveService {
   private tierService = new TierService();
   private promptStateService = new PromptStateService();
 
+  // シール詳細画面（GET /api/stickers/:id）用。保存可否の最終判断はsave()側のエラーに任せ、
+  // ここでは表示に必要な情報（保存数・tier・自作か・保存済みか）をまとめて返すだけ。
+  async getDetail(
+    stickerId: string,
+    userId: string,
+  ): Promise<{
+    id: string;
+    promptId: string;
+    creatorId: string;
+    pixels: number[];
+    blockX: number;
+    blockY: number;
+    createdAt: Date;
+    saveCount: number;
+    tier: 1 | 2 | 4 | 10;
+    isMine: boolean;
+    alreadySaved: boolean;
+  }> {
+    const sticker = await this.stickerRepository.findByIdWithSaveCount(stickerId);
+    if (!sticker) {
+      throw new StickerNotFoundError(stickerId);
+    }
+    const userSticker = await this.userStickerRepository.findByUserAndSticker(userId, stickerId);
+    return {
+      ...sticker,
+      tier: this.tierService.resolveTier(sticker.saveCount),
+      isMine: sticker.creatorId === userId,
+      alreadySaved: userSticker !== null,
+    };
+  }
+
   async save(stickerId: string, userId: string, via: "plaza" | "chat"): Promise<UserSticker> {
     const sticker = await this.stickerRepository.findById(stickerId);
     if (!sticker) {

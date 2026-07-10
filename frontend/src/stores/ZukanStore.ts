@@ -31,6 +31,10 @@ async function loadInitial(): Promise<void> {
 
 void loadInitial();
 
+export async function refreshZukan(): Promise<void> {
+  await loadInitial();
+}
+
 function getCollected(): CollectedSticker[] {
   return collected;
 }

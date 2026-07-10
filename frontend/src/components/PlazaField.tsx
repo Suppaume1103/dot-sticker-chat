@@ -49,7 +49,7 @@ function PlazaField({ prompt, stickers, state, presenceCount, countdownLabel }: 
         return (
           <Link
             key={sticker.id}
-            to={`/sticker/${sticker.id}`}
+            to={`/sticker/${sticker.id}?via=plaza`}
             className={`art t${sticker.tier}`}
             style={{ left, top, width: px, height: px }}
           >

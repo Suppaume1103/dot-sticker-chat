@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import PixelCanvas from '../components/PixelCanvas';
 import StickerPickerSheet from '../components/StickerPickerSheet';
 import { Avatar } from '../components/icons/Avatar';
@@ -75,7 +76,7 @@ function StickerBubble({ stickerId }: { stickerId?: string }) {
   const sticker = stickers.find((s) => s.id === stickerId);
   const isExpired = !sticker;
 
-  return (
+  const body = (
     <div>
       <div className={isExpired ? 'stk exp' : 'stk'}>
         {sticker?.pixels && sticker.pixels.length > 0 && <PixelCanvas pixels={sticker.pixels} size={64} />}
@@ -90,6 +91,8 @@ function StickerBubble({ stickerId }: { stickerId?: string }) {
       )}
     </div>
   );
+
+  return isExpired ? body : <Link to={`/sticker/${stickerId}?via=chat`}>{body}</Link>;
 }
 
 export default ChatScreen;

@@ -122,6 +122,34 @@ router.get("/prompts/:id/field", async (req: Request, res: Response) => {
   res.status(200).json({ stickers });
 });
 
+// GET /api/stickers/:id シール詳細（保存済み判定・自作判定込み）
+router.get("/stickers/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (typeof id !== "string") {
+    res.status(400).json({ error: "invalid id" });
+    return;
+  }
+
+  const token = extractBearerToken(req);
+  if (!token) {
+    res.status(401).json({ error: "authorization header is required" });
+    return;
+  }
+
+  try {
+    const payload = authService.verifyToken(token);
+    const { isMine, alreadySaved, ...sticker } = await saveService.getDetail(id, payload.userId);
+    res.status(200).json({ sticker, isMine, alreadySaved });
+  } catch (error: unknown) {
+    if (error instanceof StickerNotFoundError) {
+      res.status(404).json({ error: error.message });
+      return;
+    }
+    console.error("sticker detail fetch failed", error);
+    res.status(500).json({ error: "internal server error" });
+  }
+});
+
 // POST /api/stickers/:id/save 保存（広場・チャット共通）（I1, I5, I6, I7, I9, I18）
 router.post("/stickers/:id/save", async (req: Request, res: Response) => {
   const { id } = req.params;

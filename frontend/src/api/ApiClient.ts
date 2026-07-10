@@ -13,6 +13,17 @@ import type {
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
+// HTTPステータスを保持するエラー。呼び出し側でstatusによる分岐（例: 409=既に保存済み）ができるようにする。
+export class ApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 class ApiClient {
   private token: string | null = null;
 
@@ -34,7 +45,7 @@ class ApiClient {
       // backendは失敗時に { error: string } を返すので、それをメッセージとして使う。
       const body = await res.json().catch(() => null);
       const message = body && typeof body.error === 'string' ? body.error : res.statusText;
-      throw new Error(`API error: ${res.status} ${message}`);
+      throw new ApiError(res.status, message);
     }
 
     return res.json() as Promise<T>;
@@ -97,6 +108,12 @@ class ApiClient {
     return sticker;
   }
 
+  async getSticker(
+    stickerId: string,
+  ): Promise<{ sticker: FieldSticker; isMine: boolean; alreadySaved: boolean }> {
+    return this.request(`/api/stickers/${stickerId}`);
+  }
+
   async saveSticker(stickerId: string, via: 'plaza' | 'chat'): Promise<void> {
     await this.request(`/api/stickers/${stickerId}/save`, {
       method: 'POST',
@@ -117,9 +134,12 @@ class ApiClient {
   async sendMessage(
     body: { kind: 'text'; body: string } | { kind: 'sticker'; stickerId: string },
   ): Promise<Message> {
+    // backendはsnake_caseの sticker_id をbodyキーとして期待する。
+    const requestBody =
+      body.kind === 'sticker' ? { kind: body.kind, sticker_id: body.stickerId } : body;
     const { message } = await this.request<{ message: Message }>('/api/messages', {
       method: 'POST',
-      body: JSON.stringify(body),
+      body: JSON.stringify(requestBody),
     });
     return message;
   }
