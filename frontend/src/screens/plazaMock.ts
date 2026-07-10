@@ -55,6 +55,8 @@ export interface MockField {
   creatorName?: string;
 }
 
+// left/topはfieldConfig.tsのoverlapsReservedZone()で固定UI要素(THEMEバナー・上部HUD帯)と
+// 重ならないことを確認済み
 export const MOCK_STICKERS: (FieldSticker & MockField)[] = [
   {
     id: 1,
@@ -67,7 +69,7 @@ export const MOCK_STICKERS: (FieldSticker & MockField)[] = [
     saveCount: 62,
     tier: 10,
     left: 90,
-    top: 380,
+    top: 400, // THEMEバナー(overlapsThemeBanner参照)と重ならない位置
     creatorName: '〇〇 さく',
   },
   {
@@ -109,8 +111,8 @@ export const MOCK_STICKERS: (FieldSticker & MockField)[] = [
     left: 235,
     top: 235,
   },
-  { id: 5, promptId: 7, creatorId: 104, blockX: 6, blockY: 9, createdAt: '', pixels: [], saveCount: 0, tier: 1, left: 210, top: 330 },
-  { id: 6, promptId: 7, creatorId: 105, blockX: 8, blockY: 8, createdAt: '', pixels: [], saveCount: 2, tier: 1, left: 250, top: 300 },
+  { id: 5, promptId: 7, creatorId: 104, blockX: 6, blockY: 9, createdAt: '', pixels: [], saveCount: 0, tier: 1, left: 100, top: 330 },
+  { id: 6, promptId: 7, creatorId: 105, blockX: 8, blockY: 8, createdAt: '', pixels: [], saveCount: 2, tier: 1, left: 300, top: 300 },
   { id: 7, promptId: 7, creatorId: 106, blockX: 2, blockY: 9, createdAt: '', pixels: [], saveCount: 1, tier: 1, left: 70, top: 330 },
   { id: 8, promptId: 7, creatorId: 107, blockX: 1, blockY: 6, createdAt: '', pixels: [], saveCount: 3, tier: 1, left: 30, top: 230 },
   { id: 9, promptId: 7, creatorId: 108, blockX: 8, blockY: 5, createdAt: '', pixels: [], saveCount: 0, tier: 1, left: 255, top: 175 },
