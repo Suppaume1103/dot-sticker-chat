@@ -1,24 +1,31 @@
 import { NavLink } from 'react-router-dom';
+import { ChatIcon, PlazaIcon, SettingsIcon, ZukanIcon } from './icons/TabIcons';
 
 const TABS = [
-  { to: '/', label: '広場' },
-  { to: '/chat', label: 'チャット' },
-  { to: '/zukan', label: '図鑑' },
-  { to: '/settings', label: '設定' },
+  { to: '/', label: '広場', Icon: PlazaIcon },
+  { to: '/chat', label: 'チャット', Icon: ChatIcon },
+  { to: '/zukan', label: '図鑑', Icon: ZukanIcon },
+  { to: '/settings', label: '設定', Icon: SettingsIcon },
 ];
 
 function TabBar() {
   return (
     <nav className="tabbar">
-      {TABS.map((tab) => (
+      {TABS.map(({ to, label, Icon }) => (
         <NavLink
-          key={tab.to}
-          to={tab.to}
-          end={tab.to === '/'}
+          key={to}
+          to={to}
+          end={to === '/'}
           className={({ isActive }) => (isActive ? 'on' : '')}
         >
-          <span className="ic" />
-          {tab.label}
+          {({ isActive }) => (
+            <>
+              <span className={isActive ? 'ic-chip on' : 'ic-chip'}>
+                <Icon active={isActive} />
+              </span>
+              {label}
+            </>
+          )}
         </NavLink>
       ))}
     </nav>

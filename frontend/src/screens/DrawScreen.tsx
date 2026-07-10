@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, type ComponentType } from 'react';
 import { Link } from 'react-router-dom';
 import PixelEditorCanvas from '../components/PixelEditorCanvas';
+import { BucketIcon, EraserIcon, EyedropperIcon, PenIcon } from '../components/icons/ToolIcons';
 import { PALETTE } from '../config/palette';
 import { apiClient } from '../api/ApiClient';
 import { MOCK_PROMPT } from './plazaMock';
@@ -10,6 +11,13 @@ const BLANK: number[] = new Array(GRID * GRID).fill(1);
 const BG_INDEX = 1; // パレット1番=白を背景/消しゴム色として扱う
 
 type Tool = 'pen' | 'eraser' | 'eyedropper' | 'bucket';
+
+const TOOL_META: Record<Tool, { label: string; Icon: ComponentType }> = {
+  pen: { label: 'ペン', Icon: PenIcon },
+  eraser: { label: '消し', Icon: EraserIcon },
+  eyedropper: { label: 'スポイト', Icon: EyedropperIcon },
+  bucket: { label: 'バケツ', Icon: BucketIcon },
+};
 
 function floodFill(pixels: number[], start: number, target: number, replacement: number): number[] {
   if (target === replacement) return pixels;
@@ -120,17 +128,21 @@ function DrawScreen() {
           ))}
         </div>
 
-        <div className="tools">
-          {(['pen', 'eraser', 'eyedropper', 'bucket'] as Tool[]).map((t) => (
-            <button
-              type="button"
-              key={t}
-              className={t === tool ? 'on' : ''}
-              onClick={() => setTool(t)}
-            >
-              {{ pen: 'ペン', eraser: '消し', eyedropper: 'スポイト', bucket: 'バケツ' }[t]}
-            </button>
-          ))}
+        <div className="tools tools-icon">
+          {(['pen', 'eraser', 'eyedropper', 'bucket'] as Tool[]).map((t) => {
+            const { label, Icon } = TOOL_META[t];
+            return (
+              <button
+                type="button"
+                key={t}
+                className={t === tool ? 'on' : ''}
+                onClick={() => setTool(t)}
+              >
+                <Icon />
+                {label}
+              </button>
+            );
+          })}
         </div>
         <div className="tools">
           <button type="button" onClick={undo} disabled={history.length === 0}>
