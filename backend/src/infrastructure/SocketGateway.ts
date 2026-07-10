@@ -50,7 +50,7 @@ export class SocketGateway {
   // I10: 在室しているユーザーIDの集合をpromptIdごとに持つ。「人数」だけでなく
   // 「このユーザーが在室しているか」をPromptStateServiceから問い合わせられるようにするため、
   // countではなくSet<userId>で管理する。
-  private presence = new Map<string, Set<string>>(); // promptId -> Set<userId>
+  private presence = new Map<string, Set<string>>();
   // 切断時にどのpromptから在室を外せばよいか分かるよう、socket.idごとに参加中のpromptIdを覚えておく。
   private joinedPrompts = new Map<string, Set<string>>();
 
