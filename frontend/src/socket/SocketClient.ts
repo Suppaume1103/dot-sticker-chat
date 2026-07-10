@@ -24,40 +24,41 @@ export interface ServerToClientEvents {
 }
 
 class SocketClient {
-  private socket: Socket | null = null;
+  // Storeがimport時点でon()を呼んでも取りこぼさないよう、socketインスタンス自体は常時生成しておき
+  // connect/disconnectは接続状態の切り替えのみを行う（autoConnect: falseで初期状態は未接続）。
+  private socket: Socket = io(BASE_URL, {
+    transports: ['websocket'],
+    autoConnect: false,
+  });
 
   // AuthStoreのtokenをハンドシェイクに載せて接続する（backendのSocketGatewayが在室チェックに使う）。
   connect(token: string | null): void {
-    if (this.socket) {
-      return;
+    this.socket.auth = { token };
+    if (!this.socket.connected) {
+      this.socket.connect();
     }
-    this.socket = io(BASE_URL, {
-      transports: ['websocket'],
-      auth: { token },
-    });
   }
 
   disconnect(): void {
-    this.socket?.close();
-    this.socket = null;
+    this.socket.disconnect();
   }
 
   joinField(promptId: string): void {
-    this.socket?.emit('field:join', { promptId });
+    this.socket.emit('field:join', { promptId });
   }
 
   leaveField(promptId: string): void {
-    this.socket?.emit('field:leave', { promptId });
+    this.socket.emit('field:leave', { promptId });
   }
 
   on<Event extends keyof ServerToClientEvents>(event: Event, handler: ServerToClientEvents[Event]): void {
     // socket.io-clientの型は任意イベント名を許容する代わりに引数型を狭められないため、
     // ここだけ購読口の型（ServerToClientEvents）を信頼してキャストする。
-    this.socket?.on(event, handler as never);
+    this.socket.on(event, handler as never);
   }
 
   off<Event extends keyof ServerToClientEvents>(event: Event, handler: ServerToClientEvents[Event]): void {
-    this.socket?.off(event, handler as never);
+    this.socket.off(event, handler as never);
   }
 }
 

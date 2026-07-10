@@ -1,5 +1,7 @@
+// 認証状態を管理するためのストア
 import { useSyncExternalStore } from 'react';
 import { apiClient } from '../api/ApiClient';
+import { socketClient } from '../socket/SocketClient';
 import type { User } from '../types';
 
 const TOKEN_KEY = 'dot-sticker-chat:token';
@@ -11,6 +13,7 @@ let restoring = token !== null;
 
 if (token) {
   apiClient.setToken(token);
+  socketClient.connect(token);
 }
 
 function notify(): void {
@@ -32,6 +35,7 @@ async function restore(): Promise<void> {
     user = null;
     localStorage.removeItem(TOKEN_KEY);
     apiClient.setToken(null);
+    socketClient.disconnect();
   } finally {
     restoring = false;
     notify();
@@ -46,6 +50,7 @@ export async function signup(handle: string, displayName: string): Promise<void>
   user = result.user;
   localStorage.setItem(TOKEN_KEY, token);
   apiClient.setToken(token);
+  socketClient.connect(token);
   notify();
 }
 
@@ -55,6 +60,7 @@ export async function login(handle: string): Promise<void> {
   user = result.user;
   localStorage.setItem(TOKEN_KEY, token);
   apiClient.setToken(token);
+  socketClient.connect(token);
   notify();
 }
 
@@ -63,6 +69,7 @@ export function logout(): void {
   user = null;
   localStorage.removeItem(TOKEN_KEY);
   apiClient.setToken(null);
+  socketClient.disconnect();
   notify();
 }
 

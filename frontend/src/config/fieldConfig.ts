@@ -55,3 +55,23 @@ export function overlapsReservedZone(
 
   return overlapsTopHud || overlapsThemeBanner;
 }
+
+// ブロック座標(blockX, blockY)を画面上のpx座標に変換する
+export function blockToPixel(blockX: number, blockY: number): { left: number; top: number } {
+  return { left: blockX * CELL, top: blockY * CELL };
+}
+
+// 予約領域と重なる場合、重ならなくなるまでtopをCELL単位で下にずらす
+export function avoidReservedZone(
+  left: number,
+  top: number,
+  size: number,
+  fieldWidth: number,
+  fieldHeight: number,
+): { left: number; top: number } {
+  let adjustedTop = top;
+  while (overlapsReservedZone(left, adjustedTop, size, fieldWidth, fieldHeight)) {
+    adjustedTop += CELL;
+  }
+  return { left, top: adjustedTop };
+}

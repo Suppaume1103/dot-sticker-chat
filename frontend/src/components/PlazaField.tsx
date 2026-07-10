@@ -1,14 +1,14 @@
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import PixelCanvas from './PixelCanvas';
-import type { Prompt } from '../types';
-import type { MockField } from '../screens/plazaMock';
-import type { FieldSticker } from '../types';
+import { avoidReservedZone, blockToPixel } from '../config/fieldConfig';
+import type { FieldSticker, Prompt } from '../types';
 
 type PlazaFieldState = 'active' | 'grace';
 
 interface PlazaFieldProps {
   prompt: Prompt;
-  stickers: (FieldSticker & MockField)[];
+  stickers: FieldSticker[];
   state: PlazaFieldState;
   presenceCount: number;
   countdownLabel: string;
@@ -17,8 +17,10 @@ interface PlazaFieldProps {
 const TIER_PX: Record<1 | 2 | 4 | 10, number> = { 1: 15, 2: 27, 4: 50, 10: 120 };
 
 function PlazaField({ prompt, stickers, state, presenceCount, countdownLabel }: PlazaFieldProps) {
+  const rootRef = useRef<HTMLDivElement>(null); // フィールドのサイズを取得するための参照
+
   return (
-    <div className="field">
+    <div className="field" ref={rootRef}>
       <div className={state === 'grace' ? 'cd warn' : 'cd'}>{countdownLabel}</div>
       <div className="hud">
         {state === 'active' ? `◎ ${presenceCount}人 在室` : `作品 ${stickers.length}枚`}
@@ -32,14 +34,24 @@ function PlazaField({ prompt, stickers, state, presenceCount, countdownLabel }: 
         <div className="th">{prompt.theme}</div>
       </div>
 
-      {stickers.map((sticker) => {
+      {stickers.map((sticker) => { // ステッカーの位置を計算して表示
         const px = TIER_PX[sticker.tier];
+        const fieldWidth = rootRef.current?.clientWidth ?? 0;
+        const fieldHeight = rootRef.current?.clientHeight ?? 0;
+        const rawPosition = blockToPixel(sticker.blockX, sticker.blockY);
+        const { left, top } = avoidReservedZone(
+          rawPosition.left,
+          rawPosition.top,
+          px,
+          fieldWidth,
+          fieldHeight,
+        );
         return (
           <Link
             key={sticker.id}
             to={`/sticker/${sticker.id}`}
             className={`art t${sticker.tier}`}
-            style={{ left: sticker.left, top: sticker.top, width: px, height: px }}
+            style={{ left, top, width: px, height: px }}
           >
             {sticker.pixels && sticker.pixels.length > 0 && (
               <PixelCanvas pixels={sticker.pixels} size={px} />
