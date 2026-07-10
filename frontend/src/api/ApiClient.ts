@@ -5,6 +5,7 @@ import type {
   Prompt,
   PromptState,
   Sticker,
+  TrayItem,
   User,
 } from '../types';
 
@@ -133,8 +134,8 @@ class ApiClient {
     return created;
   }
 
-  async getTray(): Promise<Sticker[]> {
-    const { tray } = await this.request<{ tray: Sticker[] }>('/api/users/me/tray');
+  async getTray(): Promise<TrayItem[]> {
+    const { tray } = await this.request<{ tray: TrayItem[] }>('/api/users/me/tray');
     return tray;
   }
 

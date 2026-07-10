@@ -5,11 +5,12 @@ import { Avatar } from '../components/icons/Avatar';
 import { useAuth } from '../stores/AuthStore';
 import { sendText as sendTextMessage, sendSticker as sendStickerMessage, useChat } from '../stores/ChatStore';
 import { usePlaza } from '../stores/PlazaStore';
-import { MOCK_TRAY } from './chatMock';
+import { useTray } from '../stores/TrayStore';
 
 function ChatScreen() {
   const { user } = useAuth();
   const { messages } = useChat();
+  const { tray } = useTray();
   const [text, setText] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -63,7 +64,7 @@ function ChatScreen() {
         />
       </div>
       {pickerOpen && (
-        <StickerPickerSheet tray={MOCK_TRAY} onPick={sendSticker} onClose={() => setPickerOpen(false)} />
+        <StickerPickerSheet tray={tray} onPick={sendSticker} onClose={() => setPickerOpen(false)} />
       )}
     </section>
   );

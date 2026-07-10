@@ -1,9 +1,8 @@
 import PixelCanvas from './PixelCanvas';
-import type { FieldSticker } from '../types';
-import type { MockField } from '../screens/plazaMock';
+import type { TrayItem } from '../types';
 
 interface StickerPickerSheetProps {
-  tray: (FieldSticker & MockField)[];
+  tray: TrayItem[];
   onPick: (stickerId: string) => void;
   onClose: () => void;
 }
@@ -13,7 +12,7 @@ function StickerPickerSheet({ tray, onPick, onClose }: StickerPickerSheetProps) 
     <div className="modal-scrim" onClick={onClose}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <h4>シールを送る</h4>
-        <p className="hint">いま使える札だけ表示（所持・期限内・自作含む）</p>
+        <p className="hint">いま使える札だけ表示（保存済み・期限内）</p>
         <div className="pickgrid">
           {tray.map((sticker) => (
             <button
