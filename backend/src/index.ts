@@ -16,6 +16,7 @@ import messagesRouter from "./routes/messages";
 import collectionsRouter from "./routes/collections";
 import usersRouter from "./routes/users";
 import { socketGateway } from "./infrastructure/SocketGateway";
+import { promptScheduler } from "./infrastructure/PromptScheduler";
 
 const port: string = process.env.PORT || "3000";
 
@@ -41,6 +42,9 @@ const io = new Server(httpServer, {
   cors: { origin: "*" },
 });
 socketGateway.init(io);
+
+// スケジューラの起動
+promptScheduler.start();
 
 httpServer.listen(Number(port), () => {
   console.log(`server listening on port ${port}`);

@@ -57,4 +57,13 @@ export class PromptRepository {
 
     return result.rows.map(toPrompt);
   }
+
+  // PromptSchedulerが現行お題の失効時に次お題を自動生成するためのINSERT。
+  async create(theme: string, opensAt: Date, closesAt: Date, expiresAt: Date): Promise<Prompt> {
+    const result = await pool.query(
+      "INSERT INTO prompts (theme, opens_at, closes_at, expires_at) VALUES ($1, $2, $3, $4) RETURNING id, theme, opens_at, closes_at, expires_at",
+      [theme, opensAt, closesAt, expiresAt],
+    );
+    return toPrompt(result.rows[0]);
+  }
 }
