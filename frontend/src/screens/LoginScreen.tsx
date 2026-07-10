@@ -40,7 +40,7 @@ function LoginScreen() {
       <h2>{mode === 'signup' ? 'はじめる' : 'ログイン'}</h2>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <label>
-          ハンドル
+          ユーザーID
           <input value={handle} onChange={(e) => setHandle(e.target.value)} required />
         </label>
         {mode === 'signup' && (

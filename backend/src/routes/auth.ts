@@ -5,7 +5,7 @@
 
 import { Router } from "express";
 import type { Request, Response } from "express";
-import { AuthService, UserNotFoundError } from "../services/AuthService";
+import { AuthService, UserNotFoundError, EmptyHandleError } from "../services/AuthService";
 import { UserRepository } from "../repositories/UserRepository";
 
 
@@ -42,6 +42,10 @@ router.post("/signup", async (req: Request, res: Response) => {
     const { user, token } = await authService.signup(handle, displayName);
     res.status(201).json({ user, token });
   } catch (error: unknown) {
+    if (error instanceof EmptyHandleError) { // handleが空文字列だった場合
+      res.status(400).json({ error: error.message });
+      return;
+    }
     // pgがUNIQUE制約違反を投げるとき、エラーオブジェクトのcodeが"23505"になる。
     // errorの型は unknown（何が投げられるか分からない）なので、使う前に「pgのエラーらしい形か」をチェックしてから中身を読む。
     if (

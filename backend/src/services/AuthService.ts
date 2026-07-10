@@ -23,6 +23,14 @@ export class UserNotFoundError extends Error {
   }
 }
 
+// handleが空文字/空白のみの場合。UNIQUE制約は空文字同士の重複も防げないため、ここで弾く。
+export class EmptyHandleError extends Error {
+  constructor() {
+    super("handle must not be empty");
+    this.name = "EmptyHandleError";
+  }
+}
+
 // JWTペイロード（トークンの中身）の型。ここではuserIdだけ入れる。
 interface TokenPayload {
   userId: string;
@@ -33,6 +41,10 @@ export class AuthService {
 
   // 新規登録：ユーザーを作成し、そのままログイン状態にするためのtokenを返す。
   async signup(handle: string, displayName: string): Promise<{ user: User; token: string }> {
+    if (handle.trim().length === 0) {
+      throw new EmptyHandleError();
+    }
+
     // 「同じhandleが既に存在するか」の事前チェックはしない。
     // UserRepository.createがDBのUNIQUE(handle)違反をそのまま例外として投げるので、呼び出し元（routes/auth.ts）が捕まえて409を返す設計にする。
     const user = await this.userRepository.create(handle, displayName);

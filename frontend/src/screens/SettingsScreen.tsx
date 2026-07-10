@@ -37,7 +37,7 @@ function SettingsScreen() {
           <div className="r">編集 ▸</div>
         </div>
         <div className="setrow">
-          表示名・ハンドル<div className="r">▸</div>
+          表示名・ユーザーID<div className="r">▸</div>
         </div>
         <div className="setrow">
           アバター<div className="r">▸</div>
