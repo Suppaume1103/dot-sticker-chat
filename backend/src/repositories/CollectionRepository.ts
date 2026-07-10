@@ -27,8 +27,9 @@ function toSticker(row: {
   };
 }
 
-// 「集めた」一覧（GET /api/users/me/collections）用。Stickerに、最初に手に入れた日時（firstAcquiredAt）を足しただけの交差型（&）。
-export type CollectedSticker = Sticker & { firstAcquiredAt: Date };
+// 「集めた」一覧（GET /api/users/me/collections）用。Stickerに、最初に手に入れた日時（firstAcquiredAt）と
+// お題の失効日時（expiresAt、判断は行わずservice層に渡すだけの生値）を足した交差型（&）。
+export type CollectedSticker = Sticker & { firstAcquiredAt: Date; expiresAt: Date };
 
 export class CollectionRepository {
   // --- ON CONFLICT ... DO UPDATE（upsert）について ---
@@ -61,9 +62,10 @@ export class CollectionRepository {
     const result = await pool.query(
       `SELECT
          s.id, s.prompt_id, s.creator_id, s.pixels, s.block_x, s.block_y, s.created_at,
-         c.first_acquired_at
+         c.first_acquired_at, p.expires_at
        FROM collections c
        JOIN stickers s ON s.id = c.sticker_id
+       JOIN prompts p ON p.id = s.prompt_id
        WHERE c.user_id = $1 AND c.got_normal = true
        ORDER BY c.first_acquired_at DESC`,
       [userId],
@@ -71,6 +73,7 @@ export class CollectionRepository {
     return result.rows.map((row) => ({
       ...toSticker(row),
       firstAcquiredAt: row.first_acquired_at,
+      expiresAt: row.expires_at,
     }));
   }
 }

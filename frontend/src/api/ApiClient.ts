@@ -1,4 +1,6 @@
 import type {
+  CollectedSticker,
+  CreatedSticker,
   FieldSticker,
   HealthResponse,
   Message,
@@ -122,15 +124,15 @@ class ApiClient {
     return message;
   }
 
-  async getCollections(): Promise<FieldSticker[]> {
-    const { collections } = await this.request<{ collections: FieldSticker[] }>(
+  async getCollections(): Promise<CollectedSticker[]> {
+    const { collections } = await this.request<{ collections: CollectedSticker[] }>(
       '/api/users/me/collections',
     );
     return collections;
   }
 
-  async getCreated(): Promise<FieldSticker[]> {
-    const { created } = await this.request<{ created: FieldSticker[] }>('/api/users/me/created');
+  async getCreated(): Promise<CreatedSticker[]> {
+    const { created } = await this.request<{ created: CreatedSticker[] }>('/api/users/me/created');
     return created;
   }
 

@@ -31,6 +31,9 @@ function toSticker(row: {
 // Stickerに`saveCount`を追加しただけの型なので、交差型（&）で表現する。
 export type StickerWithSaveCount = Sticker & { saveCount: number };
 
+// 「描いた」一覧（CollectionQueryService.getCreated）専用。失効日時（expiresAt、判断はservice層で行う生値）を追加。
+export type StickerWithSaveCountAndExpiry = StickerWithSaveCount & { expiresAt: Date };
+
 export class StickerRepository {
   // UNIQUE(prompt_id, creator_id)・UNIQUE(prompt_id, block_x, block_y)の
   // 違反はここでcatchせず、そのまま例外として呼び出し元（FieldPlacementService）に投げる。
@@ -85,24 +88,26 @@ export class StickerRepository {
 
   // 「描いた」一覧（CollectionQueryService）用。
   // 集計の軸がprompt単位ではなく作者（creator_id)単位になるので、prompt_idを指定せずにcreator_idで検索する。
-  async findByCreatorWithSaveCounts(creatorId: string): Promise<StickerWithSaveCount[]> {
+  async findByCreatorWithSaveCounts(creatorId: string): Promise<StickerWithSaveCountAndExpiry[]> {
     const result = await pool.query(
       `SELECT
          s.id, s.prompt_id, s.creator_id, s.pixels, s.block_x, s.block_y, s.created_at,
-         COUNT(c.user_id) AS save_count
+         COUNT(c.user_id) AS save_count, p.expires_at
        FROM stickers s
+       JOIN prompts p ON p.id = s.prompt_id
        LEFT JOIN collections c
          ON c.sticker_id = s.id
          AND c.got_normal = true
          AND c.user_id <> s.creator_id
        WHERE s.creator_id = $1
-       GROUP BY s.id
+       GROUP BY s.id, p.expires_at
        ORDER BY s.created_at DESC`,
       [creatorId],
     );
     return result.rows.map((row) => ({
       ...toSticker(row),
       saveCount: Number(row.save_count),
+      expiresAt: row.expires_at,
     }));
   }
 

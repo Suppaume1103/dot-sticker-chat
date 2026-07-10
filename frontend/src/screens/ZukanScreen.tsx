@@ -1,12 +1,30 @@
 import { useState } from 'react';
 import PixelCanvas from '../components/PixelCanvas';
-import { MOCK_COLLECTED, MOCK_CREATED, type ZukanCell } from './zukanMock';
+import { useZukan } from '../stores/ZukanStore';
+import type { CollectedSticker, CreatedSticker } from '../types';
 
 type ZukanTab = 'collected' | 'created';
 
+interface ZukanCell {
+  id: string;
+  pixels: number[];
+  saveCount?: number;
+  expired: boolean;
+}
+
+function toCell(sticker: CollectedSticker | CreatedSticker): ZukanCell {
+  return {
+    id: sticker.id,
+    pixels: sticker.pixels,
+    saveCount: 'saveCount' in sticker ? sticker.saveCount : undefined,
+    expired: sticker.expired,
+  };
+}
+
 function ZukanScreen() {
   const [tab, setTab] = useState<ZukanTab>('collected');
-  const cells = tab === 'collected' ? MOCK_COLLECTED : MOCK_CREATED;
+  const { collected, created } = useZukan();
+  const cells = (tab === 'collected' ? collected : created).map(toCell);
 
   return (
     <section className="scr">
@@ -14,7 +32,7 @@ function ZukanScreen() {
         <span>
           <span className="mark">■</span>図鑑
         </span>
-        <span className="sub">集めた {MOCK_COLLECTED.length}枚</span>
+        <span className="sub">集めた {collected.length}枚</span>
       </header>
       <div className="body">
         <div className="tabs">

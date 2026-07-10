@@ -37,6 +37,19 @@ export interface TrayItem extends Sticker {
   acquiredAt: string;
 }
 
+// 図鑑「集めた」タブ用。失効しても消えない(I4)ため、expiredで見た目だけ変える。
+export interface CollectedSticker extends Sticker {
+  firstAcquiredAt: string;
+  expired: boolean;
+}
+
+// 図鑑「描いた」タブ用。
+export interface CreatedSticker extends Sticker {
+  saveCount: number;
+  tier: 1 | 2 | 4 | 10;
+  expired: boolean;
+}
+
 export interface Message {
   id: string;
   senderId: string;
