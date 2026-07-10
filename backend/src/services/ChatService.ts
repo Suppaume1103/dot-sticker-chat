@@ -7,6 +7,7 @@ import { MessageRepository } from "../repositories/MessageRepository";
 import { StickerRepository } from "../repositories/StickerRepository";
 import { UserStickerRepository } from "../repositories/UserStickerRepository";
 import { PromptRepository } from "../repositories/PromptRepository";
+import { socketGateway } from "../infrastructure/SocketGateway";
 import type { Message } from "../entities/Message";
 
 // bodyが空文字/未指定のテキストメッセージを送ろうとした場合。
@@ -55,7 +56,9 @@ export class ChatService {
     if (!body || body.trim().length === 0) {
       throw new EmptyMessageError();
     }
-    return this.messageRepository.insert(senderId, "text", body, null);
+    const message = await this.messageRepository.insert(senderId, "text", body, null);
+    socketGateway.emitMessageNew(message);
+    return message;
   }
 
   // I15: 検証するのは「今この時点で送信してよいか」だけ。
@@ -78,7 +81,9 @@ export class ChatService {
       throw new StickerExpiredError(stickerId);
     }
 
-    return this.messageRepository.insert(senderId, "sticker", null, stickerId);
+    const message = await this.messageRepository.insert(senderId, "sticker", null, stickerId);
+    socketGateway.emitMessageNew(message);
+    return message;
   }
 
   async getRecent(before: Date | null, limit: number): Promise<Message[]> {

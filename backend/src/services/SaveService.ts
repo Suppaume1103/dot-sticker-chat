@@ -8,6 +8,8 @@ import { StickerRepository } from "../repositories/StickerRepository";
 import { PromptRepository } from "../repositories/PromptRepository";
 import { UserStickerRepository } from "../repositories/UserStickerRepository";
 import { CollectionRepository } from "../repositories/CollectionRepository";
+import { TierService } from "./TierService";
+import { socketGateway } from "../infrastructure/SocketGateway";
 import type { UserSticker } from "../entities/UserSticker";
 
 const PG_UNIQUE_VIOLATION = "23505"; // PostgreSQLのエラーコード。UNIQUE制約違反のときに返ってくる。
@@ -60,6 +62,7 @@ export class SaveService {
   private promptRepository = new PromptRepository();
   private userStickerRepository = new UserStickerRepository();
   private collectionRepository = new CollectionRepository();
+  private tierService = new TierService();
 
   async save(stickerId: string, userId: string, via: "plaza" | "chat"): Promise<UserSticker> {
     const sticker = await this.stickerRepository.findById(stickerId);
@@ -100,7 +103,18 @@ export class SaveService {
       // I5, I6: 保存数の真実はcollections.got_normal。ここをtrueにする。
       await this.collectionRepository.upsertGotNormal(client, userId, stickerId);
 
+      // I25, I26: 配信するsaveCount/tierはCOMMIT前の同一トランザクション内で確定させる。
+      const saveCount = await this.collectionRepository.countSaves(client, stickerId, sticker.creatorId);
+
       await client.query("COMMIT");
+
+      // 書き込み成功後にのみ配信する。応答は待たない一方向配信。
+      socketGateway.emitSaveCountUpdated({
+        stickerId,
+        saveCount,
+        tier: this.tierService.resolveTier(saveCount),
+      });
+
       return userSticker;
     } catch (error: unknown) {
       await client.query("ROLLBACK");

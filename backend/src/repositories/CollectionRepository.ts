@@ -46,6 +46,16 @@ export class CollectionRepository {
     );
   }
 
+  // SaveServiceが保存成功直後にsticker:save_count_updatedを配信するための件数取得。
+  // I7: 作者自身の保存は数えない（user_id <> creatorIdで除外）。
+  async countSaves(client: PoolClient, stickerId: string, creatorId: string): Promise<number> {
+    const result = await client.query(
+      "SELECT COUNT(*) AS save_count FROM collections WHERE sticker_id = $1 AND got_normal = true AND user_id <> $2",
+      [stickerId, creatorId],
+    );
+    return Number(result.rows[0].save_count);
+  }
+
   // ChatServiceがシール送信時に「所持しているか」を確認するための取得。
   async findCollectedByUser(userId: string): Promise<CollectedSticker[]> {
     const result = await pool.query(

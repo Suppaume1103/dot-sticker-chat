@@ -4,15 +4,18 @@
 import "dotenv/config";
 
 
+import { createServer } from "http";
 import express from "express";
 import type { Request, Response } from "express";
 import cors from "cors";
+import { Server } from "socket.io";
 import authRouter from "./routes/auth";
 import promptsRouter from "./routes/prompts";
 import stickersRouter from "./routes/stickers";
 import messagesRouter from "./routes/messages";
 import collectionsRouter from "./routes/collections";
 import usersRouter from "./routes/users";
+import { socketGateway } from "./infrastructure/SocketGateway";
 
 const port: string = process.env.PORT || "3000";
 
@@ -32,6 +35,13 @@ app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ status: "ok" });
 });
 
-app.listen(Number(port), () => {
+// Socket.IOの初期化
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: { origin: "*" },
+});
+socketGateway.init(io);
+
+httpServer.listen(Number(port), () => {
   console.log(`server listening on port ${port}`);
 });

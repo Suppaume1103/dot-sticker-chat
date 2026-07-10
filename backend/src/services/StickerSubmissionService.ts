@@ -9,6 +9,7 @@ import { StickerRepository } from "../repositories/StickerRepository";
 import type { StickerWithSaveCount } from "../repositories/StickerRepository";
 import { FieldPlacementService } from "./FieldPlacementService";
 import { TierService } from "./TierService";
+import { socketGateway } from "../infrastructure/SocketGateway";
 import type { Sticker } from "../entities/Sticker";
 
 const PIXELS_LENGTH = 256; // 256要素、各要素は0〜15のパレットindex
@@ -81,7 +82,19 @@ export class StickerSubmissionService {
 
     // ここから先の「空きブロックを選んでINSERT、UNIQUE(block)違反ならリトライ」は
     // FieldPlacementServiceの責務（I21改, I23改）。
-    return this.fieldPlacementService.assignAndInsert(promptId, creatorId, pixels);
+    const sticker = await this.fieldPlacementService.assignAndInsert(promptId, creatorId, pixels);
+
+    // 書き込み成功後にのみ配信する（I19, I21改）。応答は待たない一方向配信。
+    socketGateway.emitStickerNew({
+      stickerId: sticker.id,
+      promptId: sticker.promptId,
+      blockX: sticker.blockX,
+      blockY: sticker.blockY,
+      creatorId: sticker.creatorId,
+      pixels: sticker.pixels,
+    });
+
+    return sticker;
   }
 
   async getOwnSubmission(promptId: string, creatorId: string): Promise<Sticker | null> {
