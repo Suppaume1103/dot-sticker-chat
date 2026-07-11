@@ -9,6 +9,7 @@ import { StickerRepository } from "../repositories/StickerRepository";
 import type { StickerWithSaveCount } from "../repositories/StickerRepository";
 import { FieldPlacementService } from "./FieldPlacementService";
 import { TierService } from "./TierService";
+import { UserStickerRepository } from "../repositories/UserStickerRepository";
 import { socketGateway } from "../infrastructure/SocketGateway";
 import type { Sticker } from "../entities/Sticker";
 
@@ -56,6 +57,7 @@ export class StickerSubmissionService {
   private stickerRepository = new StickerRepository();
   private fieldPlacementService = new FieldPlacementService();
   private tierService = new TierService();
+  private userStickerRepository = new UserStickerRepository();
 
   async submit(promptId: string, creatorId: string, pixels: number[]): Promise<Sticker> {
     const prompt = await this.promptRepository.findById(promptId);
@@ -82,6 +84,10 @@ export class StickerSubmissionService {
     // ここから先の「空きブロックを選んでINSERT、UNIQUE(block)違反ならリトライ」は
     // FieldPlacementServiceの責務（I21改, I23改）。
     const sticker = await this.fieldPlacementService.assignAndInsert(promptId, creatorId, pixels);
+
+    // 作者自身も自分の作品をチャットで使えるよう、投稿成功後に自動でトレイへ登録する。
+    // SaveService.saveは自作保存を禁止しているため、この経路以外で作者自身がトレイに入ることはない。
+    await this.userStickerRepository.insertForCreator(creatorId, sticker.id);
 
     // 書き込み成功後にのみ配信する（I19, I21改）。応答は待たない一方向配信。
     socketGateway.emitStickerNew({

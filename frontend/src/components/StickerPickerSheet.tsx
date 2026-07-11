@@ -12,7 +12,7 @@ function StickerPickerSheet({ tray, onPick, onClose }: StickerPickerSheetProps) 
     <div className="modal-scrim" onClick={onClose}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <h4>シールを送る</h4>
-        <p className="hint">いま使える札だけ表示（保存済み・期限内）</p>
+        <p className="hint">いま使える札だけ表示（保存済み・自作・期限内）</p>
         <div className="pickgrid">
           {tray.map((sticker) => (
             <button

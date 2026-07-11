@@ -6,6 +6,6 @@
 export interface UserSticker {
   userId: string;
   stickerId: string;
-  acquiredVia: "plaza" | "chat";
+  acquiredVia: "plaza" | "chat" | "created";
   acquiredAt: Date;
 }

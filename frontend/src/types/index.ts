@@ -38,7 +38,7 @@ export interface StickerDetail extends FieldSticker {
 
 // 自分が保存済み（プロフィールのtray）のシール。期限内(I1)のもののみ。
 export interface TrayItem extends Sticker {
-  acquiredVia: 'plaza' | 'chat';
+  acquiredVia: 'plaza' | 'chat' | 'created';
   acquiredAt: string;
 }
 

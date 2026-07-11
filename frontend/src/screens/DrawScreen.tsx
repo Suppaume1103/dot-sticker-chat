@@ -5,6 +5,8 @@ import { BucketIcon, EraserIcon, EyedropperIcon, PenIcon } from '../components/i
 import { PALETTE } from '../config/palette';
 import { ApiError, apiClient } from '../api/ApiClient';
 import { joinPlazaField, leavePlazaField, usePlaza } from '../stores/PlazaStore';
+import { refreshTray } from '../stores/TrayStore';
+import { refreshZukan } from '../stores/ZukanStore';
 
 const GRID = 16;
 const BLANK: number[] = new Array(GRID * GRID).fill(1);
@@ -124,6 +126,8 @@ function DrawScreen() {
     try {
       await apiClient.submitSticker(prompt.id, pixels);
       setSubmitState('done');
+      void refreshZukan();
+      void refreshTray();
     } catch (err) {
       setSubmitErrorMessage(err instanceof ApiError ? err.message : '送信に失敗しました');
       setSubmitState('error');

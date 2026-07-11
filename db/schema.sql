@@ -80,7 +80,7 @@ CREATE TABLE user_stickers (
   -- I1: 1人は同じ作品を2枚以上持てない（未保有のみ・重複不可）
   CONSTRAINT uq_user_sticker UNIQUE (user_id, sticker_id),
 
-  CONSTRAINT chk_acquired_via CHECK (acquired_via IN ('plaza', 'chat'))
+  CONSTRAINT chk_acquired_via CHECK (acquired_via IN ('plaza', 'chat', 'created'))
 );
 
 CREATE INDEX idx_user_stickers_user ON user_stickers (user_id);

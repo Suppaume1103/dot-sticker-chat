@@ -28,12 +28,12 @@ function toSticker(row: {
 }
 
 // トレイ（GET /api/users/me/tray）用。Stickerに、誰がどう手に入れたか（acquiredVia/acquiredAt）を足しただけの交差型。
-export type TrayItem = Sticker & { acquiredVia: "plaza" | "chat"; acquiredAt: Date };
+export type TrayItem = Sticker & { acquiredVia: "plaza" | "chat" | "created"; acquiredAt: Date };
 
 function toUserSticker(row: {
   user_id: string;
   sticker_id: string;
-  acquired_via: "plaza" | "chat";
+  acquired_via: "plaza" | "chat" | "created";
   acquired_at: Date;
 }): UserSticker {
   return {
@@ -59,6 +59,18 @@ export class UserStickerRepository {
        VALUES ($1, $2, $3)
        RETURNING user_id, sticker_id, acquired_via, acquired_at`,
       [userId, stickerId, acquiredVia],
+    );
+    return toUserSticker(result.rows[0]);
+  }
+
+  // 投稿処理（StickerSubmissionService）が、投稿成功直後に作者自身のトレイへ自動登録するための専用INSERT。
+  // 投稿処理自体のトランザクションには参加しない（失敗してもシール投稿自体は成立済みのため致命的ではない）。
+  async insertForCreator(userId: string, stickerId: string): Promise<UserSticker> {
+    const result = await pool.query(
+      `INSERT INTO user_stickers (user_id, sticker_id, acquired_via)
+       VALUES ($1, $2, 'created')
+       RETURNING user_id, sticker_id, acquired_via, acquired_at`,
+      [userId, stickerId],
     );
     return toUserSticker(result.rows[0]);
   }
