@@ -64,6 +64,11 @@ export async function login(handle: string): Promise<void> {
   notify();
 }
 
+export async function updateDisplayName(displayName: string): Promise<void> {
+  user = await apiClient.updateMe({ displayName });
+  notify();
+}
+
 export function logout(): void {
   token = null;
   user = null;

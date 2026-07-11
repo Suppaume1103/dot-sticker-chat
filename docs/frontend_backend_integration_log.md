@@ -126,22 +126,74 @@ Phase 2の最終フェーズ。この時点でシール単体取得API・保存�
 4. ブラウザ（複数タブ/複数ユーザー）で実際の画面を操作して確認
 5. 検証用パッケージ・スクリプト・DBのテストデータ（`handle`にフェーズ名を含むプレフィックスを付けて識別）を削除して後片付け
 
-## 既知の積み残し(実装中に見つけたもの)
+## Phase 3: 積み残し解消・追加バグ修正
 
-1. DrawScreen.tsxの実データ未接続
-Phase 1時点からのTODOで、いまだにplazaMock.MOCK_PROMPTにお題ID・テーマを依存しています。実際には「現在アクティブなお題」に対して投稿する必要があるため、PlazaStore(またはapiClient.getCurrentPrompt())に接続する必要があります。これが直らないと、ユーザーが実際に「描く」ボタンから投稿しても現在のお題と紐付かず、シールが正しく反映されません。実質唯一の「モックが残っている」機能欠陥です。
+Phase 2完了後、残っていた積み残し（DrawScreen未接続・表示名解決・パン/ズーム未実装）を順に解消した。さらにその過程・その後のユーザー確認で新たなバグが2件見つかり、あわせて対応した。
 
-2. AuthStoreのトークン設定タイミング
-DrawScreenのTODOコメントに「認証実装後、AuthStoreのトークンをApiClientへ設定してから呼ぶ」とありましたが、これはPhase 1で解消済みのはず(AuthStoreがログイン時にapiClient.setToken()を呼ぶため)。念のため実装済みかは確認していません。
+### DrawScreen実データ化
+
+- `plazaMock.MOCK_PROMPT`依存を除去し、`usePlaza()`で実際の現在お題（テーマ・締切・promptId）を取得するよう変更
+- 投稿先を実際の`prompt.id`に、残り時間表示も`PlazaScreen.tsx`と同じ`formatCountdown`ロジックで実装
+- エラー表示を固定文言から`ApiError`ベースの実メッセージに変更
+- 古い認証まわりのTODOコメントを削除（Phase 1で解消済みと判明）
+
+**見つけて直したバグ：広場画面を経由せず直接`/draw`に入ると投稿が常に失敗する**
+I10（描画には広場への在室=`field:join`が必要）により、`PlazaScreen`を経由せず`/draw`へ直接遷移すると在室登録がされないまま投稿しようとして失敗する。`DrawScreen`自体でも`joinPlazaField`/`leavePlazaField`を呼ぶよう対応した。
+
+修正後、`plazaMock.ts`はどこからも参照されなくなったため削除した。
+
+### 表示名（display_name）のAPI埋め込み対応
+
+積み残し3（表示名解決の欠如）に対応。「別APIで一括取得」ではなく「既存クエリにJOINして埋め込む」方式を採用（Phase 2dの`expiresAt`追加と同じパターン）。
+
+- `MessageRepository.insert`/`findRecent`のSQLに`users`とのJOINを追加し、`senderDisplayName`を埋め込む（`insert`はCTEで1クエリのまま実現）
+- `StickerRepository.findByIdWithSaveCount`にも同様のJOINを追加し、`creatorDisplayName`を埋め込む
+- `ChatScreen.tsx`/`StickerDetailScreen.tsx`のID直接表示を表示名表示に置き換え
+- 対象はチャットの送信者名・シール詳細の作者名の2箇所のみ（図鑑・広場は元々ID/名前を表示していないため対象外＝YAGNI）
+
+### チャットメッセージが1文字ずつ縦積みになるバグ修正
+
+`.msg`（flexコンテナ）内でメッセージ本体を包むラッパー`<div>`がflexアイテムとして扱われる際、中の`.bub`が持つ`max-width: 70%`のパーセンテージ計算がflexアイテムのintrinsicサイズ計算時に解決できず、日本語テキスト（文字単位で改行可能）の特性と相まって、ラッパー幅が1文字分まで縮んでしまっていた。`max-width`をコンテインブロックに依存しない`min(70vw, 320px)`に変更して解決した。
+
+### 広場フィールドのパン・ズーム実装（積み残し4の解消）
+
+自前実装（追加npm依存なし）。ドラッグ（pointer events）でパン、ホイール/ピンチでズーム。ズームボタン（+/−）のUIは削除。
+
+- `.field`（ビューポート）の直下に、シールのみを内包する`.field-canvas`（`transform: translate() scale()`）を新設。THEMEバナー・在室バッジ・カウントダウン・「描く」ボタンは`.field-canvas`の外に残し、パン・ズームの影響を受けないよう画面固定にした
+- 初期表示は`pan=(0,0), zoom=1`とし、既存の`avoidReservedZone`ロジック・見た目に回帰が起きないようにした
+
+**見つけて直したバグ1：ピンチズームがscaleを更新しなかった**
+合成イベントでのテスト中、2本目の指の`pointerdown`で`setPointerCapture`が`NotFoundError`を投げ、以降のポインタ登録処理が止まっていた。`try-catch`で囲み、capture失敗時もMapへの登録は継続するよう修正。
+
+**見つけて直したバグ2（ユーザー確認で判明）：「描く」ボタン・シールのクリックが効かなくなった**
+パン・ズーム実装で`.field`全体に`setPointerCapture`を仕込んだ副作用で、その内側にある`<Link>`（「描く」ボタン、各シールへのリンク）をクリックしても、後続のクリックイベントが`.field`側にリダイレクトされてしまい、画面遷移が発生しなくなっていた。`handlePointerDown`内で、クリック対象が`<a>`要素（またはその子孫）の場合はpointer capture自体をスキップするよう修正した。
+
+### 設定画面の未実装ボタン修正
+
+`SettingsScreen.tsx`がPhase 1時点の`MOCK_USER`のまま放置されており、「ログアウト」「表示名・ユーザーID」「アバター」「このアプリについて」はいずれもクリックハンドラーの無い静的`<div>`だった（新規の壊れではなく元々未実装）。
+
+- ログアウト：`AuthStore.logout()`を呼ぶよう実装（`RequireAuth`が自動的に`/login`へリダイレクトするため、明示的な`navigate`は不要）
+- 表示名・ユーザーID編集：その場モーダルで実装。`AuthStore`に`updateDisplayName()`を新設し、`apiClient.updateMe()`呼び出しとuser state更新をStore側に集約。ユーザーID(`handle`)はbackendに変更APIが無いため表示のみ
+- アバター：`Avatar`コンポーネントは`seed`から自動生成される仕組みで、DBに`avatar`列自体が無く変更機能が存在しないため行を削除
+- このアプリについて：対応するサブ画面がwireframeの8画面にも含まれておらずスコープ外のため削除
+
+### PixelEditorCanvasのタッチ非対応バグ修正（ユーザー確認で判明）
+
+スマートフォンでは「描く」ボタンは押せるが、キャンバス上のドラッグでは描けず、マス目に個別タップしないと描けないという報告があった。原因は`PixelEditorCanvas.tsx`が`onMouseDown`/`onMouseEnter`というマウス専用イベントのみで実装されており、タッチデバイスの指ドラッグには反応しない作りだったため。
+
+Pointer Events（マウス・タッチ・ペンを統一的に扱えるAPI）ベースに書き換え、`document.elementFromPoint()`で「今カーソル/指が乗っているセル」を毎回判定する方式に変更した。タッチは最初に触れた要素へ暗黙的にpointer captureされる仕様があるため、単純に各セルへ`onPointerEnter`を付けるだけでは対応できず、座標から直接セルを判定する実装が必要だった。
+
+### 検証
+
+各項目とも、typecheck/lint通過後、ブラウザで実際にログインして動作確認した。特にパン・ズーム関連のバグは、`evaluate_script`で合成PointerEvent/WheelEventを`dispatchEvent`し、DOM上のtransform値やコンソールエラーを直接確認する手法で検証した（実ブラウザの物理操作に近づけるため、`mouseenter`単体ではなく`mouseout`→`mouseover`のペアで発火させる必要があるなど、合成イベント特有の癖を踏まえた）。
+
+## 既知の積み残し
 
 設計上の既知の制約(意図的に対応しない/後回し)
 
-3. 表示名解決の欠如
-チャット・シール詳細画面で、相手ユーザーの名前がsenderId/creatorId(数字のID)のまま表示されます。ユーザー名を引く仕組み(APIまたはキャッシュ)がbackendに無いため。デモとして許容範囲かはユーザー判断。
+1. AuthStoreのトークン設定タイミング
+DrawScreenに残っていた古いTODOコメントは削除済み。実際にはPhase 1時点で`AuthStore`がログイン時に`apiClient.setToken()`を呼んでおり、解消済みと確認した。
 
-4. PlazaField.tsxのパン・ズーム未実装
-広場のシールは実際には非常に広い仮想キャンバス上に配置されるため、ブロック座標によっては画面外に描画されます。ズームボタン(+/−)はUIとして存在しますが機能していません。これは元々「Phase 3」として別枠で計画していた項目です。
+Phase 2・Phase 3を通して完了
 
-Phase 2全体としては完了
-
-Plaza・Chat・Tray・図鑑・シール詳細の5画面すべてが実データ・リアルタイム更新で動作するようになっています。
+Plaza・Chat・Tray・図鑑・シール詳細・お絵描き・設定の全画面が実データ・リアルタイム更新で動作するようになっている。表示名解決・パン/ズームも実装済み。

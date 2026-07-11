@@ -83,6 +83,12 @@ function PlazaField({ prompt, stickers, state, presenceCount, countdownLabel }: 
   );
 
   const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    // シール・「描く」ボタンなどのリンク上ではpointer captureを行わない。
+    // ここでcaptureすると、クリックの相手がリンクではなくこの要素にリダイレクトされ、
+    // タップ/クリックしても画面遷移が起きなくなってしまうため。
+    if ((e.target as HTMLElement).closest('a')) {
+      return;
+    }
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {
