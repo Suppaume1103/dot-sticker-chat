@@ -79,10 +79,23 @@
 .field {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+  background-color: var(--bg);
+  /* ドラッグ/ピンチをこちらで処理するため、ブラウザ標準のスクロール・ピンチズームは無効化する */
+  touch-action: none;
+  cursor: grab;
+}
+
+/* シールを内包し、パン・ズームのtransformを適用する層。固定UI(.center/.hud/.cd/.fab)はこの外側(.field直下)に置く */
+.field-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
   background:
     repeating-linear-gradient(0deg, transparent 0 23px, var(--line) 23px 24px),
     repeating-linear-gradient(90deg, transparent 0 23px, var(--line) 23px 24px);
-  background-color: var(--bg);
 }
 
 .field .center {
@@ -141,27 +154,6 @@
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
-}
-
-.field .zoom {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.field .zoom div {
-  width: 26px;
-  height: 26px;
-  border: 1px solid var(--ink);
-  background: var(--surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: ui-monospace, Consolas, monospace;
-  font-size: 14px;
 }
 
 .art {
