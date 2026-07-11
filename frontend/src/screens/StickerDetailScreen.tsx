@@ -5,14 +5,14 @@ import { Avatar } from '../components/icons/Avatar';
 import { apiClient, ApiError } from '../api/ApiClient';
 import { refreshTray } from '../stores/TrayStore';
 import { refreshZukan } from '../stores/ZukanStore';
-import type { FieldSticker, Prompt } from '../types';
+import type { Prompt, StickerDetail } from '../types';
 
 function StickerDetailScreen() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const via = searchParams.get('via') === 'chat' ? 'chat' : 'plaza';
 
-  const [sticker, setSticker] = useState<FieldSticker | null>(null);
+  const [sticker, setSticker] = useState<StickerDetail | null>(null);
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [isMine, setIsMine] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -107,7 +107,7 @@ function StickerDetailScreen() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Avatar seed={sticker.creatorId} size={32} />
           <div>
-            <div style={{ fontSize: 12, fontWeight: 700 }}>{sticker.creatorId}</div>
+            <div style={{ fontSize: 12, fontWeight: 700 }}>{sticker.creatorDisplayName}</div>
             {prompt && <div className="lbl">{prompt.theme}</div>}
           </div>
           <span className="pill" style={{ marginLeft: 'auto' }}>

@@ -75,6 +75,7 @@ export class SaveService {
     id: string;
     promptId: string;
     creatorId: string;
+    creatorDisplayName: string;
     pixels: number[];
     blockX: number;
     blockY: number;

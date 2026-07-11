@@ -31,6 +31,11 @@ export interface FieldSticker extends Sticker {
   tier: 1 | 2 | 4 | 10;
 }
 
+// シール詳細画面（GET /api/stickers/:id）専用。作者の表示名を追加。
+export interface StickerDetail extends FieldSticker {
+  creatorDisplayName: string;
+}
+
 // 自分が保存済み（プロフィールのtray）のシール。期限内(I1)のもののみ。
 export interface TrayItem extends Sticker {
   acquiredVia: 'plaza' | 'chat';
@@ -53,6 +58,7 @@ export interface CreatedSticker extends Sticker {
 export interface Message {
   id: string;
   senderId: string;
+  senderDisplayName: string;
   kind: 'text' | 'sticker';
   body?: string;
   stickerId?: string;
@@ -64,6 +70,7 @@ export interface Message {
 export interface RawMessagePayload {
   id: string;
   senderId: string;
+  senderDisplayName: string;
   kind: 'text' | 'sticker';
   body: string | null;
   stickerId: string | null;

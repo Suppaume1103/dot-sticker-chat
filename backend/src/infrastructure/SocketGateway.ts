@@ -31,6 +31,7 @@ interface PromptStateChangedPayload {
 interface MessageNewPayload {
   id: string;
   senderId: string;
+  senderDisplayName: string;
   kind: "text" | "sticker";
   body: string | null;
   stickerId: string | null;

@@ -34,6 +34,9 @@ export type StickerWithSaveCount = Sticker & { saveCount: number };
 // 「描いた」一覧（CollectionQueryService.getCreated）専用。失効日時（expiresAt、判断はservice層で行う生値）を追加。
 export type StickerWithSaveCountAndExpiry = StickerWithSaveCount & { expiresAt: Date };
 
+// シール詳細画面（GET /api/stickers/:id）専用。作者の表示名を追加。
+export type StickerWithSaveCountAndCreatorName = StickerWithSaveCount & { creatorDisplayName: string };
+
 export class StickerRepository {
   // UNIQUE(prompt_id, creator_id)・UNIQUE(prompt_id, block_x, block_y)の
   // 違反はここでcatchせず、そのまま例外として呼び出し元（FieldPlacementService）に投げる。
@@ -86,19 +89,21 @@ export class StickerRepository {
     }));
   }
 
-  // シール詳細画面（GET /api/stickers/:id）用。findByPromptWithSaveCountsと同じJOIN構造で、id単体を検索する。
-  async findByIdWithSaveCount(id: string): Promise<StickerWithSaveCount | null> {
+  // シール詳細画面（GET /api/stickers/:id）用。findByPromptWithSaveCountsと同じJOIN構造に加え、
+  // 作者の表示名（users.display_name）もJOINで埋め込む。
+  async findByIdWithSaveCount(id: string): Promise<StickerWithSaveCountAndCreatorName | null> {
     const result = await pool.query(
       `SELECT
          s.id, s.prompt_id, s.creator_id, s.pixels, s.block_x, s.block_y, s.created_at,
-         COUNT(c.user_id) AS save_count
+         COUNT(c.user_id) AS save_count, u.display_name AS creator_display_name
        FROM stickers s
+       JOIN users u ON u.id = s.creator_id
        LEFT JOIN collections c
          ON c.sticker_id = s.id
          AND c.got_normal = true
          AND c.user_id <> s.creator_id
        WHERE s.id = $1
-       GROUP BY s.id`,
+       GROUP BY s.id, u.display_name`,
       [id],
     );
     if (result.rows.length === 0) {
@@ -107,6 +112,7 @@ export class StickerRepository {
     return {
       ...toSticker(result.rows[0]),
       saveCount: Number(result.rows[0].save_count),
+      creatorDisplayName: result.rows[0].creator_display_name,
     };
   }
 

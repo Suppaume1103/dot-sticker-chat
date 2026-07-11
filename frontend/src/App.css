@@ -320,7 +320,10 @@
 }
 
 .bub {
-  max-width: 70%;
+  /* flexアイテムの子でmax-width:%を使うと、日本語テキスト（文字単位で改行可能）の
+     intrinsicサイズ計算でコンテインブロックの解決に失敗し、1文字ずつ縦積みになるバグがあった。
+     vwはコンテインブロックに依存せず解決できるため、代わりにこちらを使う。 */
+  max-width: min(70vw, 320px);
   padding: 8px;
   border: 1px solid var(--ink);
   border-radius: 8px;

@@ -42,7 +42,7 @@ function ChatScreen() {
             <div key={m.id} className={mine ? 'msg me' : 'msg'}>
               {!mine && <Avatar seed={m.senderId} size={26} />}
               <div>
-                {!mine && <div className="lbl" style={{ marginBottom: 2 }}>{m.senderId}</div>}
+                {!mine && <div className="lbl" style={{ marginBottom: 2 }}>{m.senderDisplayName}</div>}
                 {m.kind === 'text' && <div className="bub">{m.body}</div>}
                 {m.kind === 'sticker' && <StickerBubble stickerId={m.stickerId} />}
               </div>

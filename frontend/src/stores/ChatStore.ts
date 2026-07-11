@@ -35,6 +35,7 @@ function toMessage(raw: RawMessagePayload): Message {
   return {
     id: raw.id,
     senderId: raw.senderId,
+    senderDisplayName: raw.senderDisplayName,
     kind: raw.kind,
     body: raw.body ?? undefined,
     stickerId: raw.stickerId ?? undefined,

@@ -7,6 +7,7 @@ import type {
   Prompt,
   PromptState,
   Sticker,
+  StickerDetail,
   TrayItem,
   User,
 } from '../types';
@@ -110,7 +111,7 @@ class ApiClient {
 
   async getSticker(
     stickerId: string,
-  ): Promise<{ sticker: FieldSticker; isMine: boolean; alreadySaved: boolean }> {
+  ): Promise<{ sticker: StickerDetail; isMine: boolean; alreadySaved: boolean }> {
     return this.request(`/api/stickers/${stickerId}`);
   }
 
