@@ -41,7 +41,7 @@ function ChatScreen() {
           return (
             <div key={m.id} className={mine ? 'msg me' : 'msg'}>
               {!mine && <Avatar seed={m.senderId} size={26} />}
-              <div>
+              <div className="msg-content">
                 {!mine && <div className="lbl" style={{ marginBottom: 2 }}>{m.senderDisplayName}</div>}
                 {m.kind === 'text' && <div className="bub">{m.body}</div>}
                 {m.kind === 'sticker' && <StickerBubble stickerId={m.stickerId} />}

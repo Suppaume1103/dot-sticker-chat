@@ -17,7 +17,7 @@ function formatCountdown(ms: number): string {
 
 // 広場画面のコンポーネント
 function PlazaScreen() {
-  const { prompt, state, stickers, presenceCount } = usePlaza();
+  const { prompt, state, stickers, presenceCount, error, loading } = usePlaza();
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -33,7 +33,22 @@ function PlazaScreen() {
     return () => clearInterval(timer);
   }, []);
 
-  if (!prompt || !state) {
+  if (error) {
+    return (
+      <section className="scr">
+        <header className="appbar">
+          <span>
+            <span className="mark">■</span>広場
+          </span>
+        </header>
+        <div className="body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+          {error === 'no prompt scheduled' ? '現在開催中のお題はありません。' : error}
+        </div>
+      </section>
+    );
+  }
+
+  if (loading || !prompt || !state) {
     return (
       <section className="scr">
         <header className="appbar">

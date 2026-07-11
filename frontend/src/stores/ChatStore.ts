@@ -21,7 +21,7 @@ async function loadInitial(): Promise<void> {
   error = null;
   notify();
   try {
-    messages = await apiClient.getMessages();
+    messages = (await apiClient.getMessages()).reverse();
   } catch (err) {
     error = err instanceof Error ? err.message : 'メッセージの取得に失敗しました';
   } finally {
