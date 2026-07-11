@@ -1,16 +1,29 @@
-import { useState, type ComponentType } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
 import { Link } from 'react-router-dom';
 import PixelEditorCanvas from '../components/PixelEditorCanvas';
 import { BucketIcon, EraserIcon, EyedropperIcon, PenIcon } from '../components/icons/ToolIcons';
 import { PALETTE } from '../config/palette';
-import { apiClient } from '../api/ApiClient';
-import { MOCK_PROMPT } from './plazaMock';
+import { ApiError, apiClient } from '../api/ApiClient';
+import { joinPlazaField, leavePlazaField, usePlaza } from '../stores/PlazaStore';
 
 const GRID = 16;
 const BLANK: number[] = new Array(GRID * GRID).fill(1);
 const BG_INDEX = 1; // パレット1番=白を背景/消しゴム色として扱う
 
 type Tool = 'pen' | 'eraser' | 'eyedropper' | 'bucket';
+
+// フィールドの残り時間をフォーマットする関数（PlazaScreen.tsxと同じロジック）
+function formatCountdown(ms: number): string {
+  const clamped = Math.max(0, ms);
+  const totalSeconds = Math.floor(clamped / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return hours > 0
+    ? `${hours}:${pad(minutes)}:${pad(seconds)}`
+    : `${pad(minutes)}:${pad(seconds)}`;
+}
 
 const TOOL_META: Record<Tool, { label: string; Icon: ComponentType }> = {
   pen: { label: 'ペン', Icon: PenIcon },
@@ -38,12 +51,27 @@ function floodFill(pixels: number[], start: number, target: number, replacement:
 }
 
 function DrawScreen() {
+  const { prompt } = usePlaza();
   const [pixels, setPixels] = useState<number[]>(BLANK);
   const [history, setHistory] = useState<number[][]>([]);
   const [redoStack, setRedoStack] = useState<number[][]>([]);
   const [selectedColor, setSelectedColor] = useState(0);
   const [tool, setTool] = useState<Tool>('pen');
   const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle');
+  const [submitErrorMessage, setSubmitErrorMessage] = useState('送信に失敗しました');
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // I10: 描画には広場への在室（field:join）が必要なため、PlazaScreenと同様にここでも在室登録する。
+  useEffect(() => {
+    if (!prompt) return;
+    joinPlazaField(prompt.id);
+    return () => leavePlazaField(prompt.id);
+  }, [prompt]);
 
   const commit = (next: number[]) => {
     setHistory((h) => [...h, pixels]);
@@ -91,25 +119,36 @@ function DrawScreen() {
   };
 
   const handleSubmit = async () => {
+    if (!prompt) return;
     setSubmitState('submitting');
     try {
-      // TODO: 認証実装後、AuthStoreのトークンをApiClientへ設定してから呼ぶ
-      await apiClient.submitSticker(MOCK_PROMPT.id, pixels);
+      await apiClient.submitSticker(prompt.id, pixels);
       setSubmitState('done');
-    } catch {
-      // backend未接続でも編集内容の確認はできるよう、ローカルではロックだけ行う
+    } catch (err) {
+      setSubmitErrorMessage(err instanceof ApiError ? err.message : '送信に失敗しました');
       setSubmitState('error');
     }
   };
 
   const locked = submitState === 'submitting' || submitState === 'done' || submitState === 'error';
 
+  if (!prompt) {
+    return (
+      <section className="scr">
+        <header className="appbar">
+          <Link to="/">◂ 広場へ戻る</Link>
+        </header>
+        <div className="body">読み込み中...</div>
+      </section>
+    );
+  }
+
   return (
     <section className="scr">
       <header className="appbar">
         <Link to="/">◂ 広場へ戻る</Link>
         <span className="sub">
-          お題：{MOCK_PROMPT.theme} 残り 02:14
+          お題：{prompt.theme} 残り {formatCountdown(new Date(prompt.closesAt).getTime() - now)}
         </span>
       </header>
       <div className="body">
@@ -160,9 +199,7 @@ function DrawScreen() {
         </div>
 
         {submitState === 'done' && <p className="lbl">投稿しました。1お題1枚・再投稿はできません。</p>}
-        {submitState === 'error' && (
-          <p className="lbl">backend未接続のため送信できませんでした（見た目確認のみ・入力はロック済み）</p>
-        )}
+        {submitState === 'error' && <p className="lbl">{submitErrorMessage}</p>}
       </div>
     </section>
   );
