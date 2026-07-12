@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import PixelCanvas from '../components/PixelCanvas';
 import { Avatar } from '../components/icons/Avatar';
 import { apiClient, ApiError } from '../api/ApiClient';
+import { joinPlazaField, leavePlazaField } from '../stores/PlazaStore';
 import { refreshTray } from '../stores/TrayStore';
 import { refreshZukan } from '../stores/ZukanStore';
 import type { Prompt, StickerDetail } from '../types';
@@ -46,6 +47,14 @@ function StickerDetailScreen() {
       cancelled = true;
     };
   }, [id]);
+
+  // I10: 広場保存(via=plaza)は在室(field:join)が必要。広場画面を経由して遷移すると
+  // PlazaScreenのアンマウントで在室が外れてしまうため、ここでも在室を維持する。
+  useEffect(() => {
+    if (via !== 'plaza' || !sticker) return;
+    joinPlazaField(sticker.promptId);
+    return () => leavePlazaField(sticker.promptId);
+  }, [via, sticker]);
 
   const handleSave = async () => {
     if (!id) return;
