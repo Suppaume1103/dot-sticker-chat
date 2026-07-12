@@ -187,6 +187,38 @@ Pointer Events（マウス・タッチ・ペンを統一的に扱えるAPI）ベ
 
 各項目とも、typecheck/lint通過後、ブラウザで実際にログインして動作確認した。特にパン・ズーム関連のバグは、`evaluate_script`で合成PointerEvent/WheelEventを`dispatchEvent`し、DOM上のtransform値やコンソールエラーを直接確認する手法で検証した（実ブラウザの物理操作に近づけるため、`mouseenter`単体ではなく`mouseout`→`mouseover`のペアで発火させる必要があるなど、合成イベント特有の癖を踏まえた）。
 
+### 図鑑未反映バグ修正 + 自作シールのチャット送信対応（ユーザー確認で判明）
+
+「描いたドット絵が図鑑に登録されておらず、チャット内での使用が出来ない」という報告を受け、原因を調査したところ2つの問題があった。
+
+**見つけて直したバグ：投稿成功後、図鑑「描いた」タブ・トレイが画面遷移しても反映されない**
+`DrawScreen.tsx`の`handleSubmit`が投稿成功後に`ZukanStore.refreshZukan()`/`TrayStore.refreshTray()`を呼んでいなかった。`ZukanStore`/`TrayStore`はどちらもアプリ起動時（モジュールロード時）に一度だけデータを取得する設計のため、ログイン中に新しく投稿しても画面遷移だけでは古いデータのまま表示され続けていた。`StickerDetailScreen.tsx`の保存成功時には既にこの対応が入っていたが、`DrawScreen.tsx`の投稿成功時には漏れていた。投稿成功時にも両方の`refresh*()`を呼ぶよう修正した。
+
+**仕様の穴：自作シールがチャットで送れない**
+チャットで送れる「トレイ」（`user_stickers`テーブル）は`SaveService.save()`（＝保存操作）でのみレコードが作られるが、`SaveService`は自作シールの保存を`SelfSaveNotAllowedError`で明確に禁止している。結果、自作シールは`user_stickers`に一切入らず、`ChatService`の所持チェック（`UserStickerRepository.findByUserAndSticker`）にも引っかからず送信できなかった。ユーザーに確認したところ「自作でも送れるようにすべき」という判断だったため、以下の対応を行った。
+
+- `user_stickers.acquired_via`のDB CHECK制約に`'created'`を追加（`'plaza' | 'chat'` → `'plaza' | 'chat' | 'created'`）
+- `UserStickerRepository`にトランザクション不要の新規INSERT用メソッド`insertForCreator(userId, stickerId)`を追加
+- `StickerSubmissionService.submit()`内、投稿成功直後（Socket配信の前）に`insertForCreator`を呼び、作者自身のトレイへ自動登録するようにした
+- `TrayStore`/`ChatService`側のクエリ・所持チェックロジックは無変更（既存の`user_stickers`ベースのロジックがそのまま自作シールにも機能する設計にした）
+
+### 検証
+
+2人の独立ユーザーで検証した。1人目が投稿→**画面遷移せず**同一セッション内で図鑑「描いた」タブを開き即座に反映されることを確認。トレイ・チャットのシールピッカーにも自作シールが選択肢として現れ、実際に送信できることを確認した。検証用テストユーザー・シールはDBから削除して後片付けした。
+
+### 広場保存（via=plaza）が失敗するバグ修正（ユーザー確認で判明）
+
+「描画可能期間に他ユーザーのドット絵を保存できるはずが出来ていない」という報告を受け、原因を調査した。
+
+**見つけて直したバグ：シールをクリックして詳細画面に遷移すると在室から外れ、保存がSaveWindowClosedErrorで失敗する**
+backendのI10invariant（`PromptStateService.canPlazaSave`）は、広場保存に「時間窓内（opens〜closes）」に加えて「その広場に在室していること（`SocketGateway.isPresent`）」も要求する。在室は`field:join`/`field:leave`イベントで管理されており、`PlazaScreen.tsx`が画面表示中のみ`joinPlazaField(prompt.id)`を呼び、アンマウント時に`leavePlazaField`を呼ぶ設計になっていた。広場でシールをクリックして`StickerDetailScreen`（`/sticker/:id?via=plaza`）へ遷移すると、`PlazaScreen`がアンマウントされ在室から外れてしまい、その状態で「保存」を押すと保存が失敗していた。
+
+これは`DrawScreen.tsx`で以前発生していたのと同種の問題（本セクション冒頭のバグと同じ「画面遷移で在室が切れる」パターン）で、`StickerDetailScreen.tsx`側だけ対応が漏れていた。`sticker`取得後、`via === 'plaza'`の場合に限り`joinPlazaField(sticker.promptId)`/`leavePlazaField`を呼ぶ`useEffect`を追加して解決した（`via === 'chat'`はI18により在室不問のため対象外）。
+
+### 検証
+
+2つの独立ブラウザセッション（ユーザーA・ユーザーB）で検証した。Aが投稿し、Bが広場画面からそのシールをクリックして詳細画面へ遷移、「保存」を押して「保存済み ✓」に変わることを確認した。URLを直接`/sticker/:id?via=plaza`で開いた場合（広場非経由）でも同様に保存できることを想定した設計になっている。検証用テストユーザー・シールはDBから削除して後片付けした。
+
 ## 既知の積み残し
 
 設計上の既知の制約(意図的に対応しない/後回し)
