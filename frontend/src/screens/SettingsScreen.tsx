@@ -104,10 +104,6 @@ function SettingsScreen() {
         >
           ログアウト<div className="r" style={{ color: 'var(--accent)' }}>▸</div>
         </div>
-
-        <p className="lbl" style={{ marginTop: 16 }}>
-          [開発用] backend接続: {status}
-        </p>
       </div>
 
       {editing && (
