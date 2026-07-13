@@ -34,7 +34,7 @@ router.post("/signup", async (req: Request, res: Response) => {
 
   // --- 入力値の検証（システム境界での必須チェック）---
   if (typeof handle !== "string" || typeof displayName !== "string") {
-    res.status(400).json({ error: "ハンドルネームと表示名は必須です" });
+    res.status(400).json({ error: "ユーザーIDと表示名は必須です" });
     return;
   }
 
@@ -54,7 +54,7 @@ router.post("/signup", async (req: Request, res: Response) => {
       "code" in error &&
       (error as { code?: string }).code === "23505"
     ) {
-      res.status(409).json({ error: "このハンドルネームは既に存在します" });
+      res.status(409).json({ error: "このユーザーIDは既に存在します" });
       return;
     }
     console.error("signup failed", error);
@@ -67,7 +67,7 @@ router.post("/login", async (req: Request, res: Response) => {
   const { handle } = req.body;
 
   if (typeof handle !== "string") {
-    res.status(400).json({ error: "ハンドルネームは必須です" });
+    res.status(400).json({ error: "ユーザーIDは必須です" });
     return;
   }
 
