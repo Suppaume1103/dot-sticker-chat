@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import PixelCanvas from '../components/PixelCanvas';
 import StickerPickerSheet from '../components/StickerPickerSheet';
 import { Avatar } from '../components/icons/Avatar';
 import { useAuth } from '../stores/AuthStore';
-import { sendText as sendTextMessage, sendSticker as sendStickerMessage, useChat } from '../stores/ChatStore';
+import {
+  refreshMessages,
+  sendText as sendTextMessage,
+  sendSticker as sendStickerMessage,
+  useChat,
+} from '../stores/ChatStore';
 import { usePlaza } from '../stores/PlazaStore';
 import { useTray } from '../stores/TrayStore';
 
@@ -14,6 +19,13 @@ function ChatScreen() {
   const { tray } = useTray();
   const [text, setText] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
+
+  // ChatStoreはアプリ起動時（未ログイン状態）に既にimportされ得るため、
+  // モジュールロード時の初回取得がtoken未セットのまま失敗している場合がある。
+  // 画面を開くたびに再取得することで、新規ユーザーの初回訪問でも確実に履歴を表示する。
+  useEffect(() => {
+    void refreshMessages();
+  }, []);
 
   const sendText = () => {
     const body = text.trim();

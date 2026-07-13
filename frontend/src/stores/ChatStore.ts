@@ -57,6 +57,12 @@ socketClient.on('message:new', onMessageNew);
 
 void loadInitial();
 
+// ChatScreenのマウント時に呼ぶ再取得用。このモジュールはアプリ起動時（未ログイン状態）に
+// 既にimportされ得るため、上のloadInitial()がtoken未セットのまま失敗している場合がある。
+export async function refreshMessages(): Promise<void> {
+  await loadInitial();
+}
+
 // メッセージを送信する
 export async function sendText(body: string): Promise<void> {
   const message = await apiClient.sendMessage({ kind: 'text', body });
