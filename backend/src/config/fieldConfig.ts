@@ -16,12 +16,15 @@ export const BLOCK_CELLS = MAX_TIER + 1; // = 11
 export const GRID_BLOCKS = Math.ceil(Math.sqrt(EXPECTED_N / DENSITY)); // = 32
 export const GRID_CELLS = GRID_BLOCKS * BLOCK_CELLS; // = 352
 
+export type Tier = 4 | 6 | 8 | 10;
+
 // 保存数 → 表示ティア（I25: サイズはDBに持たずコードで導出、I26: 4段階の閾値）
-export function tierSize(saveCount: number): 1 | 2 | 4 | 10 {
+// 最小ティアは4（saveCount=0でも小さすぎて視認できないサイズにはしない）
+export function tierSize(saveCount: number): Tier {
   if (saveCount >= 50) return 10;
-  if (saveCount >= 20) return 4;
-  if (saveCount >= 5) return 2;
-  return 1;
+  if (saveCount >= 20) return 8;
+  if (saveCount >= 5) return 6;
+  return 4;
 }
 
 // ============================================================

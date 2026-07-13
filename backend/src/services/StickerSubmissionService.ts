@@ -12,6 +12,7 @@ import { TierService } from "./TierService";
 import { UserStickerRepository } from "../repositories/UserStickerRepository";
 import { socketGateway } from "../infrastructure/SocketGateway";
 import type { Sticker } from "../entities/Sticker";
+import type { Tier } from "../config/fieldConfig";
 
 const PIXELS_LENGTH = 256; // 256要素、各要素は0〜15のパレットindex
 
@@ -48,7 +49,7 @@ export class InvalidPixelsError extends Error {
 }
 
 // GET /field のレスポンス形。保存数に加えて表示ティアも付与する。
-export type StickerWithTier = StickerWithSaveCount & { tier: 1 | 2 | 4 | 10 };
+export type StickerWithTier = StickerWithSaveCount & { tier: Tier };
 
 // I19: 投稿処理の責務は「投稿可能かの判断」と「空きブロックの割当・INSERT」まで。
 export class StickerSubmissionService {

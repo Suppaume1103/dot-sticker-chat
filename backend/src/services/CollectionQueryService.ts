@@ -11,13 +11,14 @@ import type { StickerWithSaveCountAndExpiry } from "../repositories/StickerRepos
 import { UserStickerRepository } from "../repositories/UserStickerRepository";
 import type { TrayItem } from "../repositories/UserStickerRepository";
 import { TierService } from "./TierService";
+import type { Tier } from "../config/fieldConfig";
 
 // 「集めた」一覧の1件分。repositoryが返す生のexpiresAtの代わりに、判断済みのexpiredを公開する。
 export type CollectedSticker = Omit<CollectedStickerRow, "expiresAt"> & { expired: boolean };
 
 // 「描いた」一覧の1件分。StickerWithSaveCountAndExpiryに、算出したtierを足し、生のexpiresAtをexpiredに置き換える。
 export type CreatedSticker = Omit<StickerWithSaveCountAndExpiry, "expiresAt"> & {
-  tier: 1 | 2 | 4 | 10;
+  tier: Tier;
   expired: boolean;
 };
 

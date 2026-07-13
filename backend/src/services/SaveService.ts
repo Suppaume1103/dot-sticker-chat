@@ -12,6 +12,7 @@ import { TierService } from "./TierService";
 import { PromptStateService } from "./PromptStateService";
 import { socketGateway } from "../infrastructure/SocketGateway";
 import type { UserSticker } from "../entities/UserSticker";
+import type { Tier } from "../config/fieldConfig";
 
 const PG_UNIQUE_VIOLATION = "23505"; // PostgreSQLのエラーコード。UNIQUE制約違反のときに返ってくる。
 
@@ -81,7 +82,7 @@ export class SaveService {
     blockY: number;
     createdAt: Date;
     saveCount: number;
-    tier: 1 | 2 | 4 | 10;
+    tier: Tier;
     isMine: boolean;
     alreadySaved: boolean;
   }> {

@@ -3,11 +3,11 @@
 // 対応invariant: I25, I26
 // ============================================================
 
-import { tierSize } from "../config/fieldConfig";
+import { tierSize, type Tier } from "../config/fieldConfig";
 
 export class TierService {
   // fieldConfig.tsのtierSize()に委譲するラッパー。
-  resolveTier(saveCount: number): 1 | 2 | 4 | 10 {
+  resolveTier(saveCount: number): Tier {
     return tierSize(saveCount);
   }
 }

@@ -89,7 +89,11 @@ function DrawScreen() {
       return;
     }
     if (tool === 'bucket') {
-      commit(floodFill(pixels, index, pixels[index], selectedColor));
+      const next = floodFill(pixels, index, pixels[index], selectedColor);
+      // 塗り替え不要時floodFillは同一参照を返す。pointerMoveでの再発火(揺れ)分まで
+      // 履歴に積んでしまうとundoを複数回要求されるため、実際に変化した時だけcommitする
+      if (next === pixels) return;
+      commit(next);
       return;
     }
     const color = tool === 'eraser' ? BG_INDEX : selectedColor;

@@ -5,6 +5,7 @@
 
 import type { Server, Socket } from "socket.io";
 import { AuthService } from "../services/AuthService";
+import type { Tier } from "../config/fieldConfig";
 
 // Socket.IOのイベントペイロードの型定義
 interface StickerNewPayload {
@@ -19,7 +20,7 @@ interface StickerNewPayload {
 interface SaveCountUpdatedPayload {
   stickerId: string;
   saveCount: number;
-  tier: 1 | 2 | 4 | 10;
+  tier: Tier;
 }
 
 interface PromptStateChangedPayload {

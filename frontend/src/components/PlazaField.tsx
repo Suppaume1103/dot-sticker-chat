@@ -8,6 +8,7 @@ import {
 import { Link } from 'react-router-dom';
 import PixelCanvas from './PixelCanvas';
 import { avoidReservedZone, blockToPixel, CELL, GRID_BLOCKS } from '../config/fieldConfig';
+import type { Tier } from '../config/fieldConfig';
 import type { FieldSticker, Prompt } from '../types';
 
 type PlazaFieldState = 'active' | 'grace';
@@ -20,7 +21,7 @@ interface PlazaFieldProps {
   countdownLabel: string;
 }
 
-const TIER_PX: Record<1 | 2 | 4 | 10, number> = { 1: 15, 2: 27, 4: 50, 10: 120 };
+const TIER_PX: Record<Tier, number> = { 4: 15, 6: 27, 8: 50, 10: 120 };
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
@@ -149,11 +150,6 @@ function PlazaField({ prompt, stickers, state, presenceCount, countdownLabel }: 
       <div className="hud">
         {state === 'active' ? `◎ ${presenceCount}人 在室` : `作品 ${stickers.length}枚`}
       </div>
-      <div className="center">
-        <div className="o">THEME{state === 'grace' ? '(終了)' : ''}</div>
-        <div className="th">{prompt.theme}</div>
-      </div>
-
       <div
         className="field-canvas"
         style={{
@@ -162,10 +158,16 @@ function PlazaField({ prompt, stickers, state, presenceCount, countdownLabel }: 
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
         }}
       >
+        {/* 広場（世界座標）の中心に固定。パン/ズームの対象内に置くことで、画面をスクロールすると画面外にも出る */}
+        <div className="center">
+          <div className="o">THEME{state === 'grace' ? '(終了)' : ''}</div>
+          <div className="th">{prompt.theme}</div>
+        </div>
+
         {stickers.map((sticker) => { // ステッカーの位置を計算して表示
           const px = TIER_PX[sticker.tier];
-          const fieldWidth = rootRef.current?.clientWidth ?? 0;
-          const fieldHeight = rootRef.current?.clientHeight ?? 0;
+          const fieldWidth = CANVAS_SIZE;
+          const fieldHeight = CANVAS_SIZE;
           const rawPosition = blockToPixel(sticker.blockX, sticker.blockY);
           const { left, top } = avoidReservedZone(
             rawPosition.left,

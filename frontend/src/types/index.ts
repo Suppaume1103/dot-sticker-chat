@@ -1,3 +1,5 @@
+import type { Tier } from '../config/fieldConfig';
+
 export type PromptState = 'active' | 'grace' | 'waiting';
 
 // backendのidはpg(BIGSERIAL)がstringで返すため、フロント側もstringで統一する。
@@ -28,7 +30,7 @@ export interface Sticker {
 
 export interface FieldSticker extends Sticker {
   saveCount: number;
-  tier: 1 | 2 | 4 | 10;
+  tier: Tier;
 }
 
 // シール詳細画面（GET /api/stickers/:id）専用。作者の表示名を追加。
@@ -51,7 +53,7 @@ export interface CollectedSticker extends Sticker {
 // 図鑑「描いた」タブ用。
 export interface CreatedSticker extends Sticker {
   saveCount: number;
-  tier: 1 | 2 | 4 | 10;
+  tier: Tier;
   expired: boolean;
 }
 
