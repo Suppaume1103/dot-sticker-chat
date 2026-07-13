@@ -42,7 +42,7 @@ function PlazaScreen() {
           </span>
         </header>
         <div className="body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-          {error === 'no prompt scheduled' ? '現在開催中のお題はありません。' : error}
+          {error === '現在開催中のお題はありません' ? '現在開催中のお題はありません。' : error}
         </div>
       </section>
     );
