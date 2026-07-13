@@ -8,7 +8,7 @@ type ConnectionStatus = 'checking' | 'ok' | 'error';
 
 function SettingsScreen() {
   const { user } = useAuth();
-  const [status, setStatus] = useState<ConnectionStatus>('checking');
+  const [, setStatus] = useState<ConnectionStatus>('checking');
   const [notify, setNotify] = useState(true);
   const theme = useTheme();
   const [editing, setEditing] = useState(false);
