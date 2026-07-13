@@ -43,7 +43,7 @@ body {
 #root {
   max-width: 480px;
   margin: 0 auto;
-  min-height: 100svh;
+  height: 100svh;
   background: var(--bg);
   border-inline: 1px solid var(--line);
 }
