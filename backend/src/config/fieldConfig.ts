@@ -36,4 +36,4 @@ export const GRACE_WINDOW_MS = 5 * 60 * 1000; // closes〜expires：チャット
 export const SCHEDULER_CRON = "*/30 * * * * *"; // 状態チェックの頻度（30秒ごと。node-cronは秒フィールド対応）
 
 // 次お題自動生成時に順番に使うお題名。THEMESの末尾まで行ったら先頭に戻る。
-export const THEMES = ["ねこ", "たべもの", "のりもの", "そら", "はな", "どうぶつ", "たてもの", "うみ"];
+export const THEMES = ["ねこ", "たべもの", "のりもの", "そら", "はな", "どうぶつ", "たてもの", "うみ", "さかな"];
