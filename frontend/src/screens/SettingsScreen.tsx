@@ -1,27 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Avatar } from '../components/icons/Avatar';
-import { apiClient } from '../api/ApiClient';
 import { toggleTheme, useTheme } from '../stores/ThemeStore';
 import { logout, updateDisplayName, useAuth } from '../stores/AuthStore';
 
-type ConnectionStatus = 'checking' | 'ok' | 'error';
-
 function SettingsScreen() {
   const { user } = useAuth();
-  const [, setStatus] = useState<ConnectionStatus>('checking');
   const [notify, setNotify] = useState(true);
   const theme = useTheme();
   const [editing, setEditing] = useState(false);
   const [displayNameInput, setDisplayNameInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-
-  useEffect(() => {
-    apiClient
-      .getHealth()
-      .then(() => setStatus('ok'))
-      .catch(() => setStatus('error'));
-  }, []);
 
   const openEditModal = () => {
     setDisplayNameInput(user?.displayName ?? '');
