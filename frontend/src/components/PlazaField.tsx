@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
@@ -7,7 +8,14 @@ import {
 } from 'react';
 import { Link } from 'react-router-dom';
 import PixelCanvas from './PixelCanvas';
-import { avoidReservedZone, blockToPixel, CELL, GRID_BLOCKS } from '../config/fieldConfig';
+import {
+  avoidReservedZone,
+  blockToPixel,
+  CELL,
+  GRID_BLOCKS,
+  THEME_BANNER_CENTER_X_RATIO,
+  THEME_BANNER_CENTER_Y_RATIO,
+} from '../config/fieldConfig';
 import type { Tier } from '../config/fieldConfig';
 import type { FieldSticker, Prompt } from '../types';
 
@@ -61,6 +69,16 @@ function PlazaField({ prompt, stickers, state, presenceCount, countdownLabel }: 
       return Math.min(0, Math.max(viewportSize - canvasSize, value));
     };
     return { x: clampAxis(nextPan.x, viewportWidth), y: clampAxis(nextPan.y, viewportHeight) };
+  }, []);
+
+  // 画面に入った直後、THEMEバナー（フィールド中心）がビューポート中央に来るようpanを初期化する
+  useEffect(() => {
+    const viewportWidth = rootRef.current?.clientWidth ?? 0;
+    const viewportHeight = rootRef.current?.clientHeight ?? 0;
+    const centerX = CANVAS_SIZE * THEME_BANNER_CENTER_X_RATIO;
+    const centerY = CANVAS_SIZE * THEME_BANNER_CENTER_Y_RATIO;
+    setPan(clampPan({ x: viewportWidth / 2 - centerX, y: viewportHeight / 2 - centerY }, 1));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // (screenX, screenY)が画面上で同じ点を指し続けるようpanを補正しつつズーム倍率をfactor倍する
