@@ -34,8 +34,16 @@ router.patch("/users/me", async (req: Request, res: Response) => {
 
   const { display_name: displayName } = req.body;
 
+  let payload;
   try {
-    const payload = authService.verifyToken(token);
+    payload = authService.verifyToken(token);
+  } catch (error: unknown) {
+    console.error("token verification failed", error);
+    res.status(401).json({ error: "無効なトークンです" });
+    return;
+  }
+
+  try {
     const user = await userSettingsService.updateDisplayName(payload.userId, displayName);
     res.status(200).json({ user });
   } catch (error: unknown) {
@@ -44,7 +52,7 @@ router.patch("/users/me", async (req: Request, res: Response) => {
       return;
     }
     console.error("user settings update failed", error);
-    res.status(401).json({ error: "無効なトークンです" });
+    res.status(500).json({ error: "サーバーエラーが発生しました" });
   }
 });
 

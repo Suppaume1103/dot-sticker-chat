@@ -101,21 +101,24 @@ router.get("/me", async (req: Request, res: Response) => {
     return;
   }
 
+  let payload;
   try {
-    const payload = authService.verifyToken(token);
-    const user = await userRepository.findById(payload.userId);
-
-    if (!user) {
-      res.status(404).json({ error: "ユーザーが見つかりません" });
-      return;
-    }
-
-    res.status(200).json({ user });
-  } catch (error: unknown) {
     // jwt.verifyは期限切れ・改ざんされたtokenに対して例外を投げる。
+    payload = authService.verifyToken(token);
+  } catch (error: unknown) {
     console.error("token verification failed", error);
     res.status(401).json({ error: "無効なトークンです" });
+    return;
   }
+
+  const user = await userRepository.findById(payload.userId);
+
+  if (!user) {
+    res.status(404).json({ error: "ユーザーが見つかりません" });
+    return;
+  }
+
+  res.status(200).json({ user });
 });
 
 export default router;
