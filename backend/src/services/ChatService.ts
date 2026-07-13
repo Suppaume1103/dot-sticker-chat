@@ -13,7 +13,7 @@ import type { Message } from "../entities/Message";
 // bodyが空文字/未指定のテキストメッセージを送ろうとした場合。
 export class EmptyMessageError extends Error {
   constructor() {
-    super("message body must not be empty");
+    super("メッセージ本文は空にできません");
     this.name = "EmptyMessageError";
   }
 }
@@ -21,7 +21,7 @@ export class EmptyMessageError extends Error {
 // 指定されたsticker_idが存在しない場合。
 export class StickerNotFoundError extends Error {
   constructor(stickerId: string) {
-    super(`sticker not found: ${stickerId}`);
+    super(`シールが見つかりません: ${stickerId}`);
     this.name = "StickerNotFoundError";
   }
 }
@@ -29,7 +29,7 @@ export class StickerNotFoundError extends Error {
 // 送信者がそのシールを所持していない（user_stickersに存在しない）場合。
 export class StickerNotOwnedError extends Error {
   constructor(stickerId: string) {
-    super(`sticker not owned: ${stickerId}`);
+    super(`このシールを所持していません`);
     this.name = "StickerNotOwnedError";
   }
 }
@@ -37,7 +37,7 @@ export class StickerNotOwnedError extends Error {
 // I18と同じ考え方：チャット送信もお題のexpires_atを過ぎたら不可。
 export class StickerExpiredError extends Error {
   constructor(stickerId: string) {
-    super(`sticker expired: ${stickerId}`);
+    super(`このシールの使用期限は切れています`);
     this.name = "StickerExpiredError";
   }
 }

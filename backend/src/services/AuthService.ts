@@ -18,7 +18,7 @@ if (!JWT_SECRET) {
 // --- カスタムエラークラス ---
 export class UserNotFoundError extends Error {
   constructor(handle: string) {
-    super(`user not found: ${handle}`);
+    super(`ユーザーが見つかりません: ${handle}`);
     this.name = "UserNotFoundError";
   }
 }
@@ -26,7 +26,7 @@ export class UserNotFoundError extends Error {
 // handleが空文字/空白のみの場合。UNIQUE制約は空文字同士の重複も防げないため、ここで弾く。
 export class EmptyHandleError extends Error {
   constructor() {
-    super("handle must not be empty");
+    super("ハンドルネームは空にできません");
     this.name = "EmptyHandleError";
   }
 }

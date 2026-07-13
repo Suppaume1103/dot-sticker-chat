@@ -8,7 +8,7 @@ import type { User } from "../entities/User";
 // display_nameが空文字/未指定で更新しようとした場合。
 export class InvalidDisplayNameError extends Error {
   constructor() {
-    super("displayName must not be empty");
+    super("表示名は空にできません");
     this.name = "InvalidDisplayNameError";
   }
 }

@@ -28,7 +28,7 @@ function extractBearerToken(req: Request): string | null {
 router.patch("/users/me", async (req: Request, res: Response) => {
   const token = extractBearerToken(req);
   if (!token) {
-    res.status(401).json({ error: "authorization header is required" });
+    res.status(401).json({ error: "認証ヘッダーが必要です" });
     return;
   }
 
@@ -44,7 +44,7 @@ router.patch("/users/me", async (req: Request, res: Response) => {
       return;
     }
     console.error("user settings update failed", error);
-    res.status(401).json({ error: "invalid token" });
+    res.status(401).json({ error: "無効なトークンです" });
   }
 });
 

@@ -28,7 +28,7 @@ function isUniqueViolation(error: unknown): boolean {
 // I1: stickerが存在しない場合。
 export class StickerNotFoundError extends Error {
   constructor(stickerId: string) {
-    super(`sticker not found: ${stickerId}`);
+    super(`シールが見つかりません: ${stickerId}`);
     this.name = "StickerNotFoundError";
   }
 }
@@ -36,7 +36,7 @@ export class StickerNotFoundError extends Error {
 // 自作は保存不可（使用権はcreator_id判定）。
 export class SelfSaveNotAllowedError extends Error {
   constructor() {
-    super("cannot save your own sticker");
+    super("自分のシールは保存できません");
     this.name = "SelfSaveNotAllowedError";
   }
 }
@@ -44,7 +44,7 @@ export class SelfSaveNotAllowedError extends Error {
 // I9: 広場保存はclosesまで。I18: チャット保存はexpiresまで。それぞれの窓を過ぎた場合。
 export class SaveWindowClosedError extends Error {
   constructor(via: "plaza" | "chat") {
-    super(`save window closed for via=${via}`);
+    super(`保存期間が終了しています`);
     this.name = "SaveWindowClosedError";
   }
 }
@@ -52,7 +52,7 @@ export class SaveWindowClosedError extends Error {
 // I1: UNIQUE(user_id, sticker_id)違反。既にそのstickerを保存済み。
 export class AlreadySavedError extends Error {
   constructor(stickerId: string) {
-    super(`already saved: ${stickerId}`);
+    super(`すでに保存済みです`);
     this.name = "AlreadySavedError";
   }
 }

@@ -18,7 +18,7 @@ const PIXELS_LENGTH = 256; // 256要素、各要素は0〜15のパレットindex
 // I19: 1お題1人1枚。既に投稿済みの場合はここで拒否する（一発確定・再投稿不可）。
 export class PromptNotFoundError extends Error {
   constructor(promptId: string) {
-    super(`prompt not found: ${promptId}`);
+    super(`お題が見つかりません`);
     this.name = "PromptNotFoundError";
   }
 }
@@ -26,7 +26,7 @@ export class PromptNotFoundError extends Error {
 // I10: opens〜closesの時間窓外での投稿はここで拒否する。
 export class PromptNotDrawableError extends Error {
   constructor(promptId: string) {
-    super(`prompt is not drawable now: ${promptId}`);
+    super(`現在このお題には投稿できません`);
     this.name = "PromptNotDrawableError";
   }
 }
@@ -34,7 +34,7 @@ export class PromptNotDrawableError extends Error {
 // I19: 1お題1人1枚。既に投稿済みの場合はここで拒否する（一発確定・再投稿不可）。
 export class AlreadySubmittedError extends Error {
   constructor(promptId: string) {
-    super(`already submitted for prompt: ${promptId}`);
+    super(`すでに投稿済みです`);
     this.name = "AlreadySubmittedError";
   }
 }
@@ -42,7 +42,7 @@ export class AlreadySubmittedError extends Error {
 // I19: pixelsは256要素の配列である必要がある。違反時はここで拒否する。
 export class InvalidPixelsError extends Error {
   constructor() {
-    super(`pixels must be an array of length ${PIXELS_LENGTH}`);
+    super(`ピクセルデータが不正です`);
     this.name = "InvalidPixelsError";
   }
 }

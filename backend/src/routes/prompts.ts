@@ -18,7 +18,7 @@ router.get("/current", async (_req: Request, res: Response) => {
   if (!result) {
     // promptsテーブルに1件も無い場合。運用上はscheduler等が事前に
     // お題を作っておく想定なので、通常は起きないはずのケース。
-    res.status(404).json({ error: "no prompt scheduled" });
+    res.status(404).json({ error: "現在開催中のお題はありません" });
     return;
   }
 
@@ -35,14 +35,14 @@ router.get("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
 
   if (typeof id !== "string") {
-    res.status(400).json({ error: "invalid id" });
+    res.status(400).json({ error: "無効なIDです" });
     return;
   }
 
   const result = await promptStateService.getPromptWithState(id);
 
   if (!result) {
-    res.status(404).json({ error: "prompt not found" });
+    res.status(404).json({ error: "お題が見つかりません" });
     return;
   }
 

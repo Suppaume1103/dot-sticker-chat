@@ -15,7 +15,7 @@ const PG_UNIQUE_VIOLATION = "23505";
 // 「盤面が本当に満杯」という、運用上ほぼ起こらないはずのケースを表す。
 export class FieldFullError extends Error {
   constructor(promptId: string) {
-    super(`field is full for prompt: ${promptId}`);
+    super(`フィールドが満杯です (prompt: ${promptId})`);
     this.name = "FieldFullError";
   }
 }

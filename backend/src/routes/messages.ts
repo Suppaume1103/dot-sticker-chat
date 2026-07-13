@@ -37,7 +37,7 @@ const DEFAULT_LIMIT = 50;
 router.get("/messages", async (req: Request, res: Response) => {
   const token = extractBearerToken(req);
   if (!token) {
-    res.status(401).json({ error: "authorization header is required" });
+    res.status(401).json({ error: "認証ヘッダーが必要です" });
     return;
   }
 
@@ -45,7 +45,7 @@ router.get("/messages", async (req: Request, res: Response) => {
     authService.verifyToken(token);
   } catch (error: unknown) {
     console.error("token verification failed", error);
-    res.status(401).json({ error: "invalid token" });
+    res.status(401).json({ error: "無効なトークンです" });
     return;
   }
 
@@ -58,7 +58,7 @@ router.get("/messages", async (req: Request, res: Response) => {
   if (typeof before === "string") {
     const parsed = new Date(before);
     if (Number.isNaN(parsed.getTime())) {
-      res.status(400).json({ error: "before must be a valid ISO date string" });
+      res.status(400).json({ error: "beforeは有効な日付形式である必要があります" });
       return;
     }
     beforeDate = parsed;
@@ -69,7 +69,7 @@ router.get("/messages", async (req: Request, res: Response) => {
   if (typeof limit === "string") {
     const parsed = Number(limit);
     if (!Number.isInteger(parsed) || parsed <= 0) {
-      res.status(400).json({ error: "limit must be a positive integer" });
+      res.status(400).json({ error: "limitは正の整数である必要があります" });
       return;
     }
     limitNumber = parsed;
@@ -83,13 +83,13 @@ router.get("/messages", async (req: Request, res: Response) => {
 router.post("/messages", async (req: Request, res: Response) => {
   const token = extractBearerToken(req);
   if (!token) {
-    res.status(401).json({ error: "authorization header is required" });
+    res.status(401).json({ error: "認証ヘッダーが必要です" });
     return;
   }
 
   const { kind, body, sticker_id: stickerId } = req.body;
   if (kind !== "text" && kind !== "sticker") {
-    res.status(400).json({ error: "kind must be 'text' or 'sticker'" });
+    res.status(400).json({ error: "kindは 'text' か 'sticker' である必要があります" });
     return;
   }
 
@@ -103,7 +103,7 @@ router.post("/messages", async (req: Request, res: Response) => {
     }
 
     if (typeof stickerId !== "string") {
-      res.status(400).json({ error: "sticker_id is required" });
+      res.status(400).json({ error: "sticker_idは必須です" });
       return;
     }
     const message = await chatService.sendSticker(payload.userId, stickerId);
@@ -126,7 +126,7 @@ router.post("/messages", async (req: Request, res: Response) => {
       return;
     }
     console.error("message send failed", error);
-    res.status(500).json({ error: "internal server error" });
+    res.status(500).json({ error: "サーバーエラーが発生しました" });
   }
 });
 

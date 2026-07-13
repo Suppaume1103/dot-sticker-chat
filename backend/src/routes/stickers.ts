@@ -43,13 +43,13 @@ function extractBearerToken(req: Request): string | null {
 router.post("/prompts/:id/stickers", async (req: Request, res: Response) => {
   const { id } = req.params;
   if (typeof id !== "string") {
-    res.status(400).json({ error: "invalid id" });
+    res.status(400).json({ error: "無効なIDです" });
     return;
   }
 
   const token = extractBearerToken(req);
   if (!token) {
-    res.status(401).json({ error: "authorization header is required" });
+    res.status(401).json({ error: "認証ヘッダーが必要です" });
     return;
   }
 
@@ -77,7 +77,7 @@ router.post("/prompts/:id/stickers", async (req: Request, res: Response) => {
       return;
     }
     console.error("sticker submission failed", error);
-    res.status(500).json({ error: "internal server error" });
+    res.status(500).json({ error: "サーバーエラーが発生しました" });
   }
 });
 
@@ -85,13 +85,13 @@ router.post("/prompts/:id/stickers", async (req: Request, res: Response) => {
 router.get("/prompts/:id/stickers/me", async (req: Request, res: Response) => {
   const { id } = req.params;
   if (typeof id !== "string") {
-    res.status(400).json({ error: "invalid id" });
+    res.status(400).json({ error: "無効なIDです" });
     return;
   }
 
   const token = extractBearerToken(req);
   if (!token) {
-    res.status(401).json({ error: "authorization header is required" });
+    res.status(401).json({ error: "認証ヘッダーが必要です" });
     return;
   }
 
@@ -106,7 +106,7 @@ router.get("/prompts/:id/stickers/me", async (req: Request, res: Response) => {
     res.status(200).json({ submitted: true, sticker });
   } catch (error: unknown) {
     console.error("token verification failed", error);
-    res.status(401).json({ error: "invalid token" });
+    res.status(401).json({ error: "無効なトークンです" });
   }
 });
 
@@ -114,7 +114,7 @@ router.get("/prompts/:id/stickers/me", async (req: Request, res: Response) => {
 router.get("/prompts/:id/field", async (req: Request, res: Response) => {
   const { id } = req.params;
   if (typeof id !== "string") {
-    res.status(400).json({ error: "invalid id" });
+    res.status(400).json({ error: "無効なIDです" });
     return;
   }
 
@@ -126,13 +126,13 @@ router.get("/prompts/:id/field", async (req: Request, res: Response) => {
 router.get("/stickers/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   if (typeof id !== "string") {
-    res.status(400).json({ error: "invalid id" });
+    res.status(400).json({ error: "無効なIDです" });
     return;
   }
 
   const token = extractBearerToken(req);
   if (!token) {
-    res.status(401).json({ error: "authorization header is required" });
+    res.status(401).json({ error: "認証ヘッダーが必要です" });
     return;
   }
 
@@ -146,7 +146,7 @@ router.get("/stickers/:id", async (req: Request, res: Response) => {
       return;
     }
     console.error("sticker detail fetch failed", error);
-    res.status(500).json({ error: "internal server error" });
+    res.status(500).json({ error: "サーバーエラーが発生しました" });
   }
 });
 
@@ -154,13 +154,13 @@ router.get("/stickers/:id", async (req: Request, res: Response) => {
 router.post("/stickers/:id/save", async (req: Request, res: Response) => {
   const { id } = req.params;
   if (typeof id !== "string") {
-    res.status(400).json({ error: "invalid id" });
+    res.status(400).json({ error: "無効なIDです" });
     return;
   }
 
   const token = extractBearerToken(req);
   if (!token) {
-    res.status(401).json({ error: "authorization header is required" });
+    res.status(401).json({ error: "認証ヘッダーが必要です" });
     return;
   }
 
@@ -192,7 +192,7 @@ router.post("/stickers/:id/save", async (req: Request, res: Response) => {
       return;
     }
     console.error("sticker save failed", error);
-    res.status(500).json({ error: "internal server error" });
+    res.status(500).json({ error: "サーバーエラーが発生しました" });
   }
 });
 

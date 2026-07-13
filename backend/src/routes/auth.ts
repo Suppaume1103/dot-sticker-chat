@@ -34,7 +34,7 @@ router.post("/signup", async (req: Request, res: Response) => {
 
   // --- 入力値の検証（システム境界での必須チェック）---
   if (typeof handle !== "string" || typeof displayName !== "string") {
-    res.status(400).json({ error: "handle and displayName are required" });
+    res.status(400).json({ error: "ハンドルネームと表示名は必須です" });
     return;
   }
 
@@ -54,11 +54,11 @@ router.post("/signup", async (req: Request, res: Response) => {
       "code" in error &&
       (error as { code?: string }).code === "23505"
     ) {
-      res.status(409).json({ error: "handle already exists" });
+      res.status(409).json({ error: "このハンドルネームは既に存在します" });
       return;
     }
     console.error("signup failed", error);
-    res.status(500).json({ error: "internal server error" });
+    res.status(500).json({ error: "サーバーエラーが発生しました" });
   }
 });
 
@@ -67,7 +67,7 @@ router.post("/login", async (req: Request, res: Response) => {
   const { handle } = req.body;
 
   if (typeof handle !== "string") {
-    res.status(400).json({ error: "handle is required" });
+    res.status(400).json({ error: "ハンドルネームは必須です" });
     return;
   }
 
@@ -81,7 +81,7 @@ router.post("/login", async (req: Request, res: Response) => {
       return;
     }
     console.error("login failed", error);
-    res.status(500).json({ error: "internal server error" });
+    res.status(500).json({ error: "サーバーエラーが発生しました" });
   }
 });
 
@@ -97,7 +97,7 @@ router.post("/logout", (_req: Request, res: Response) => {
 router.get("/me", async (req: Request, res: Response) => {
   const token = extractBearerToken(req);
   if (!token) {
-    res.status(401).json({ error: "authorization header is required" });
+    res.status(401).json({ error: "認証ヘッダーが必要です" });
     return;
   }
 
@@ -106,7 +106,7 @@ router.get("/me", async (req: Request, res: Response) => {
     const user = await userRepository.findById(payload.userId);
 
     if (!user) {
-      res.status(404).json({ error: "user not found" });
+      res.status(404).json({ error: "ユーザーが見つかりません" });
       return;
     }
 
@@ -114,7 +114,7 @@ router.get("/me", async (req: Request, res: Response) => {
   } catch (error: unknown) {
     // jwt.verifyは期限切れ・改ざんされたtokenに対して例外を投げる。
     console.error("token verification failed", error);
-    res.status(401).json({ error: "invalid token" });
+    res.status(401).json({ error: "無効なトークンです" });
   }
 });
 

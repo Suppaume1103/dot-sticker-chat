@@ -30,7 +30,7 @@ function extractBearerToken(req: Request): string | null {
 async function requireUserId(req: Request, res: Response): Promise<string | null> {
   const token = extractBearerToken(req);
   if (!token) {
-    res.status(401).json({ error: "authorization header is required" });
+    res.status(401).json({ error: "認証ヘッダーが必要です" });
     return null;
   }
   try {
@@ -38,7 +38,7 @@ async function requireUserId(req: Request, res: Response): Promise<string | null
     return payload.userId;
   } catch (error: unknown) {
     console.error("token verification failed", error);
-    res.status(401).json({ error: "invalid token" });
+    res.status(401).json({ error: "無効なトークンです" });
     return null;
   }
 }
